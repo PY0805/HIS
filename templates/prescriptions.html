@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescriptions</title>
+</head>
+<body>
+    <h1>Prescriptions</h1>
+    <!-- 显示医生已开具的处方信息 -->
+    <p>Doctor {{ doctor_info.name }}'s Prescriptions:</p>
+    <!-- 添加处方信息的表格 -->
+    <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Patient</th>
+            <th>Medication</th>
+            <!-- 其他处方信息的表头 -->
+        </tr>
+        <!-- 循环显示每个处方的信息 -->
+        {% for prescription in doctor_prescriptions %}
+            <tr>
+                <td>{{ prescription.date }}</td>
+                <td>{{ prescription.patient_name }}</td>
+                <td>{{ prescription.medication }}</td>
+                <!-- 其他处方信息的单元格 -->
+            </tr>
+        {% endfor %}
+    </table>
+    <p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

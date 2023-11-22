@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Dashboard</title>
+</head>
+<body>
+    <h1>Welcome,  {{ nurse_info[1] }}</h1>
+
+    {% if nurse_info %}
+        <h2>Your Information:</h2>
+        <table border="1">
+            <tr>
+                {% for column in nurse_columns %}
+                    <th>{{ column }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for value in nurse_info %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        </table>
+    {% else %}
+        <p>No information available.</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('home') }}">Back to Home</a></p>
+</body>
+</html>

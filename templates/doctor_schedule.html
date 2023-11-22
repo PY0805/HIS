@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Schedule</title>
+</head>
+<body>
+    <h1>Doctor Schedule</h1>
+    <!-- 显示医生排班日程的内容 -->
+    <p>Doctor {{ doctor_info.name }}'s Schedule:</p>
+    <!-- 添加排班信息的表格 -->
+    <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <!-- 其他排班信息的表头 -->
+        </tr>
+        <!-- 循环显示每个排班的信息 -->
+        {% for schedule in doctor_schedule %}
+            <tr>
+                <td>{{ schedule.date }}</td>
+                <td>{{ schedule.time }}</td>
+                <!-- 其他排班信息的单元格 -->
+            </tr>
+        {% endfor %}
+    </table>
+    <p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

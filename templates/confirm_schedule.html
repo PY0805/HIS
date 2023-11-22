@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Schedule</title>
+</head>
+<body>
+    <h1>Confirm Schedule</h1>
+    <!-- 显示待确认的排班日程信息 -->
+    <p>Doctor {{ doctor_info.name }}'s Pending Schedule:</p>
+    <!-- 添加待确认排班信息的表格 -->
+    <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <!-- 其他待确认排班信息的表头 -->
+        </tr>
+        <!-- 循环显示每个待确认排班的信息 -->
+        {% for schedule in pending_schedule %}
+            <tr>
+                <td>{{ schedule.date }}</td>
+                <td>{{ schedule.time }}</td>
+                <!-- 其他待确认排班信息的单元格 -->
+            </tr>
+        {% endfor %}
+    </table>
+    <!-- 提供确认按钮，可触发确认排班的操作 -->
+    <form method="post" action="{{ url_for('confirm_schedule') }}">
+        <button type="submit">Confirm Schedule</button>
+    </form>
+    <p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

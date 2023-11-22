@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Information</title>
+</head>
+<body>
+    <p><a href="{{ url_for('home') }}">Back to Home</a></p>
+  <h1>医生信息查询</h1>
+    <form method="post" action="{{ url_for('doctor_info_page') }}">
+        <label for="search_term">要查询的医生ID</label>
+        <input type="text" name="search_term" id="search_term">
+        <button type="submit">搜索</button>
+    </form>
+    {% if data %}
+        <h2>ID 为 '{{ search_term }}'的医生信息查询结果:</h2>
+        <table border="1">
+            <tr>
+                {% for column in columns %}
+                    <th>{{ column }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in data %}
+                <tr>
+                    {% for value in row %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>ID不存在</p>
+    {% endif %}
+</body>
+</html>
