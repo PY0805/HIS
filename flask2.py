@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import psycopg2
 import json
-#from role_class import *
+from role_class import *
 
 app = Flask(__name__)
 
@@ -44,7 +44,8 @@ user_roles = {
     }
 }
 
-
+db_manager = DatabaseManager(db_log['UnauthorizedRole'])  # 未授权用户登录
+UnloginRole = UnauthorizedRole(db_manager, 'UnauthorizedRole')  # 创建未授权用户
 # 路由：总体页面
 @app.route('/')
 def home():
@@ -57,15 +58,8 @@ def hospital_info_page():
     if request.method == 'POST':
         # 获取前端传递的参数
         search_term = request.form['search_term']
-
-        # 查询数据库数据
-        conn = create_conn()
-        cursor = conn.cursor()
         # 使用参数进行查询
-        cursor.execute("SELECT * FROM hospital WHERE hospital_id = {} ".format(search_term))
-        data = cursor.fetchall()
-        conn.close()
-
+        data = UnloginRole.query_hospital(search_term)
         columns = get_table_columns('hospital')
         # 渲染HTML页面，将查询结果传递给页面
         return render_template('hospital_info.html', data=data, search_term=search_term, columns=columns)
@@ -80,19 +74,10 @@ def doctor_info_page():
     if request.method == 'POST':
         # 获取前端传递的参数
         search_term = request.form['search_term']
-
-        # 查询数据库数据
-        conn = create_conn()
-        cursor = conn.cursor()
-        # 使用参数进行查询
-        cursor.execute("SELECT * FROM doctor WHERE doctor_id = {} ".format(search_term))
-        data = cursor.fetchall()
-        conn.close()
-
+        data = UnloginRole.query_doctor(search_term)
         columns = get_table_columns('doctor')
         # 渲染HTML页面，将查询结果传递给页面
         return render_template('doctor_info.html', data=data, search_term=search_term, columns=columns)
-
     columns = get_table_columns('doctor')
     return render_template('doctor_info.html', data=None, search_term=None, columns=columns)
 
@@ -102,16 +87,8 @@ def department_info_page():
     if request.method == 'POST':
         # 获取前端传递的参数
         search_term = request.form['search_term']
-
-        # 查询数据库数据
-        conn = create_conn()
-        cursor = conn.cursor()
-        # 使用参数进行查询
-        cursor.execute("SELECT * FROM department WHERE department_id = {} ".format(search_term))
-        data = cursor.fetchall()
-        conn.close()
-
-        columns = get_table_columns('department')
+        UnloginRole.query_department(search_term)
+        #columns = get_table_columns('department')
         # 渲染HTML页面，将查询结果传递给页面
         return render_template('department_info.html', data=data, search_term=search_term, columns=columns)
 
@@ -124,14 +101,7 @@ def schedule_info_page():
     if request.method == 'POST':
         # 获取前端传递的参数
         search_term = request.form['search_term']
-
-        # 查询数据库数据
-        conn = create_conn()
-        cursor = conn.cursor()
-        # 使用参数进行查询
-        cursor.execute("SELECT * FROM schedule WHERE doctor_id = {} ".format(search_term))
-        data = cursor.fetchall()
-        conn.close()
+        UnloginRole.query_schedule(search_term)
 
         columns = get_table_columns('schedule')
         # 渲染HTML页面，将查询结果传递给页面
