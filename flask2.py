@@ -87,8 +87,8 @@ def department_info_page():
     if request.method == 'POST':
         # 获取前端传递的参数
         search_term = request.form['search_term']
-        UnloginRole.query_department(search_term)
-        #columns = get_table_columns('department')
+        data = UnloginRole.query_department(search_term)
+        columns = get_table_columns('department')
         # 渲染HTML页面，将查询结果传递给页面
         return render_template('department_info.html', data=data, search_term=search_term, columns=columns)
 
@@ -101,7 +101,7 @@ def schedule_info_page():
     if request.method == 'POST':
         # 获取前端传递的参数
         search_term = request.form['search_term']
-        UnloginRole.query_schedule(search_term)
+        data = UnloginRole.query_schedule(search_term)
 
         columns = get_table_columns('schedule')
         # 渲染HTML页面，将查询结果传递给页面
