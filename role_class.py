@@ -1,6 +1,9 @@
 import psycopg2
 from psycopg2 import extras
 import json
+import os
+
+photo_path = r"static/images/doctor"
 
 
 class DatabaseManager:
@@ -14,6 +17,12 @@ class DatabaseManager:
     def close(self):
         self.cur.close()
         self.conn.close()
+
+
+def img2bin(doctor_photo):
+    with open(os.path.join(photo_path, doctor_photo), 'rb') as f:
+        img = f.read()
+    return psycopg2.Binary(img)
 
 
 class RoleBase:
@@ -56,8 +65,6 @@ class AdminRole(RoleBase):
         except Exception as e:
             if "permission denied" in str(e):
                 return "权限不足"
-            elif "already exists." in str(e):
-                return "序号已经存在"
             else:
                 return "插入失败"
 
@@ -70,28 +77,96 @@ class AdminRole(RoleBase):
         except Exception as e:
             if "permission denied" in str(e):
                 return "权限不足"
-            elif "already exists." in str(e):
-                return "序号已经存在"
             else:
                 return "插入失败"
 
 
 class DoctorRole(RoleBase):
-    def query(self, doctor_id):
-        db_manager = self.db_manager
-        sql = "SELECT name, photo, department_id, title FROM doctor WHERE doctor_id = %s"
-        db_manager.cur.execute(sql, (doctor_id,))
-        data = db_manager.cur.fetchone()
-        db_manager.close()
-        if data:
-            return f"{self.role_name} Information: {data}"
-        else:
-            return "Doctor not found."
+    def query_information(self, doctor_id):
+        sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
+        result = []
+        self.db_manager.cur.execute(sql)
+        self.db_manager.conn.commit()  # 提交当前事务：case
+        data_s = self.db_manager.cur.fetchall()
+        for data in data_s:
+            data_dict = dict(data)
+            result.append(data_dict)
+        return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
+
+    def query_schedule(self, doctor_id):
+        sql = "select * from schedule where doctor_id={}".format(doctor_id)
+        result = []
+        self.db_manager.cur.execute(sql)
+        self.db_manager.conn.commit()  # 提交当前事务：
+        data_s = self.db_manager.cur.fetchall()
+        for data in data_s:
+            data_dict = dict(data)
+            result.append(data_dict)
+        return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
+
+    def query_diagnosis(self, doctor_id):
+        sql = "select * from diagnosis where doctor_id={}".format(doctor_id)
+        result = []
+        self.db_manager.cur.execute(sql)
+        self.db_manager.conn.commit()  # 提交当前事务：
+        data_s = self.db_manager.cur.fetchall()
+        for data in data_s:
+            data_dict = dict(data)
+            result.append(data_dict)
+        return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
+
+    def update_information(self, new_id, new_passwd, new_introduction, doctor_id, doctor_photo):
+        sql = "UPDATE doctor SET doctor_id = {}, password = {} ,introduction = {}, photo={} WHERE doctor_id ={} ".format(
+            new_id,
+            new_passwd,
+            new_introduction,
+            doctor_id,
+            img2bin(doctor_photo))
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+            return "更新成功"
+        except:
+            return "更新失败"
+
+    def update_schedule_state(self, new_status, doctor_id, schedule_id):
+        sql = "UPDATE schedule SET state = {} WHERE doctor_id={} and schedule_id={}".format(new_status, doctor_id,
+                                                                                            schedule_id)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+            return "更新成功"
+        except:
+            return "更新失败"
+
+    def insert_prescription(self, doctor_id, patient_id, content, prescription_id, name, nurse_id):
+        sql = "INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id) VALUES ({}, " \
+              "{}, {},{},{},{})".format(
+            doctor_id, patient_id, content, prescription_id, str(name), nurse_id)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+            return "插入成功"
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            elif "already exists." in str(e):
+                return "插入序号已经存在"
+            else:
+                return "插入失败"
 
 
-class PatientRole(RoleBase):
-    def query(self):
-        pass
+class NurseRole(RoleBase):
+    def query_information(self, doctor_id):
+        sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
+        result = []
+        self.db_manager.cur.execute(sql)
+        self.db_manager.conn.commit()  # 提交当前事务：case
+        data_s = self.db_manager.cur.fetchall()
+        for data in data_s:
+            data_dict = dict(data)
+            result.append(data_dict)
+        return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
 
 class UnauthorizedRole(RoleBase):
