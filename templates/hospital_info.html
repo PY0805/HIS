@@ -12,25 +12,17 @@
         <label for="search_term">要查询的医院ID</label>
         <input type="text" name="search_term" id="search_term">
         <button type="submit">搜索</button>
-    </form>
-    {% if data %}
-        <h2>ID 为 '{{ search_term }}'的医院信息查询结果:</h2>
-        <table border="1">
-            <tr>
-                {% for column in columns %}
-                    <th>{{ column }}</th>
+   <div id="hospitalInfo">
+        {% if data %}
+            <h2>ID 为 {{search_term}}的医院信息:</h2>
+            <ul>
+                {% for key, value in data.items() %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
                 {% endfor %}
-            </tr>
-            {% for row in data %}
-                <tr>
-                    {% for value in row %}
-                        <td>{{ value }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>ID不存在</p>
-    {% endif %}
+            </ul>
+        {% else %}
+            <p>No information available.</p>
+        {% endif %}
+    </div>
 </body>
 </html>

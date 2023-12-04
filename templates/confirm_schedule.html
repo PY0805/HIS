@@ -7,28 +7,39 @@
 </head>
 <body>
     <h1>Confirm Schedule</h1>
-    <!-- 显示待确认的排班日程信息 -->
-    <p>Doctor {{ doctor_info.name }}'s Pending Schedule:</p>
-    <!-- 添加待确认排班信息的表格 -->
+
+    <!-- 显示未确认的排班日程 -->
     <table border="1">
+        <td>
+               <form method="post" action="{{ url_for('confirm_schedule', schedule_id=schedule.id)}}">
+                        <select name="new_status">
+                            <option value="1">确认</option>
+                            <option value="2">已拒绝待处理</option>
+                            <!-- 添加其他状态选项 -->
+                        </select>
+                   <label for="schedule_id">ID:</label>
+                <input type="text" name="schedule_id" value="{{ schedule_id }}" required>
+                        <button type="submit">Update</button>
+                    </form>
+               </td>
         <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <!-- 其他待确认排班信息的表头 -->
-        </tr>
-        <!-- 循环显示每个待确认排班的信息 -->
-        {% for schedule in pending_schedule %}
-            <tr>
-                <td>{{ schedule.date }}</td>
-                <td>{{ schedule.time }}</td>
-                <!-- 其他待确认排班信息的单元格 -->
+                {% for column in columns %}
+                    <th>{{ column }}</th>
+                {% endfor %}
             </tr>
+        {% for row in schedule %}
+           <tr>
+                    {% for value in row %}
+                        <td>{{ value }}</td>
+
+               {% endfor %}
+        </tr>
         {% endfor %}
+
+
+
     </table>
-    <!-- 提供确认按钮，可触发确认排班的操作 -->
-    <form method="post" action="{{ url_for('confirm_schedule') }}">
-        <button type="submit">Confirm Schedule</button>
-    </form>
+
     <p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
 </body>
 </html>

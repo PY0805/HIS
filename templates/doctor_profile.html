@@ -10,12 +10,15 @@
     <!-- 包含医生个人信息的表单 -->
     <form method="post" action="{{ url_for('edit_doctor_profile') }}">
         <!-- 添加相应的表单字段，如姓名、联系方式等 -->
-        <label for="name">Name:</label>
-        <input type="text" name="name" value="{{ doctor_info.name }}" required>
-        <label for="contact">Contact:</label>
-        <input type="text" name="contact" value="{{ doctor_info.contact }}" required>
+        <label for="id">ID:</label>
+        <input type="text" name="id" value="{{ id }}" required>
+        <label for="passwd">Password:</label>
+        <input type="text" name="passwd" value="{{ passwd }}" required>
+        <label for="introduction">Introduction:</label>
+        <input type="text" name="introduction" value="{{ introduction }}" required>
         <button type="submit">Save Changes</button>
     </form>
     <p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
 </body>
 </html>
+
