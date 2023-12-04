@@ -156,6 +156,8 @@ def patient_dashboard():
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM patient WHERE phone = {} ".format(user_info))
         patient_info = cursor.fetchone()
+        patient_id=patient_info[0]
+        session['patient_id']=patient_id
         patient_columns = [column[0] for column in cursor.description]
         conn.close()
 
@@ -172,21 +174,21 @@ def edit_patient_profile():
     user_info = session.get('user_info')
     new_id = request.form.get('id')
     new_passwd = request.form.get('passwd')
-    new_phone = request.form.get('phone')
-    new_past = request.form.get('past')
-    new_allergy =request.form.get('allergy')
-    new_marry =request.form.get('marry')
-    new_address = request.form.get('address')
+    new_phone = request.form.get('new_phone')
+    new_past = request.form.get('new_past')
+    new_allergy =request.form.get('new_allergy')
+    new_marry =request.form.get('new_marry')
+    new_address = request.form.get('new_address')
     if user_info:
         if request.method == 'POST':
             # 在实际应用中，更新数据库中医生的个人信息
             new_id = request.form.get('id')
             new_passwd = request.form.get('passwd')
-            new_phone = request.form.get('phone')
-            new_past = request.form.get('past')
-            new_allergy = request.form.get('allergy')
-            new_marry = request.form.get('marry')
-            new_address = request.form.get('address')
+            new_phone = request.form.get('new_phone')
+            new_past = request.form.get('new_past')
+            new_allergy = request.form.get('new_allergy')
+            new_marry = request.form.get('new_marry')
+            new_address = request.form.get('new_address')
             conn = create_conn()
             cursor = conn.cursor()
 
@@ -208,7 +210,60 @@ def edit_patient_profile():
     else:
         return redirect(url_for('login'))
 
+@app.route('/patient_diagnosis')
+def patient_diagnosis():
+    user_info = session.get('user_info')
+    patient_id = session.get('patient_id')
+    if user_info :
+        # 在实际应用中，使用数据库连接执行查询
+        # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
+        conn = create_conn()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM diagnosis WHERE patient_id = {}'.format(patient_id))
+        patient_diagnosis = cursor.fetchall()
+        columns = get_table_columns('diagnosis')
+        conn.close()
 
+        return render_template('patient_diagnosis.html', columns=columns, patient_diagnosis=patient_diagnosis,patient_id=patient_id)
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/patient_case')
+def patient_case():
+    user_info = session.get('user_info')
+    patient_id = session.get('patient_id')
+    if user_info :
+        # 在实际应用中，使用数据库连接执行查询
+        # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
+        conn = create_conn()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM public.case WHERE patient_id = {}'.format(patient_id))
+        patient_case = cursor.fetchall()
+        columns = get_table_columns('case')
+        conn.close()
+
+        return render_template('patient_case.html', columns=columns, patient_case=patient_case,patient_id=patient_id)
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/patient_prescription')
+def patient_prescription():
+    user_info = session.get('user_info')
+    patient_id = session.get('patient_id')
+    if user_info :
+        # 在实际应用中，使用数据库连接执行查询
+        # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
+        conn = create_conn()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM prescription WHERE patient_id = {}'.format(patient_id))
+        patient_prescription = cursor.fetchall()
+        columns = get_table_columns('prescription')
+        conn.close()
+
+        return render_template('patient_prescription.html', columns=columns, patient_prescription=patient_prescription,patient_id=patient_id)
+    else:
+        return redirect(url_for('login'))
 
 # 路由：医生仪表盘
 @app.route('/doctor_dashboard')
