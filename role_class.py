@@ -233,7 +233,8 @@ class SupplierRole(RoleBase):
 
     def query_supply_drug(self, supplier_id):
         try:
-            sql = "select * from drug where supplier_id={}".format(supplier_id)
+            sql = "select drug_id, name, batch, state, n, notes, instruction from drug where supplier_id={}".format(
+                supplier_id)
             result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
