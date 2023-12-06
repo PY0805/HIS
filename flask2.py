@@ -115,16 +115,6 @@ def schedule_info_page():
     columns = get_table_columns('schedule')
     return render_template('schedule_info.html', data=None, search_term=None, columns=columns)
 
-@app.route('/supplier_info', methods=['GET', 'POST'])
-def supplier_info_page():
-    if request.method == 'POST':
-        # 获取前端传递的参数
-        search_term = request.form['search_term']
-        data = eval(UnloginRole.query_supplier(search_term))
-
-        columns = get_table_columns('supplier')
-        # 渲染HTML页面，将查询结果传递给页面
-        return render_template('supplier_info.html', data=data, search_term=search_term, columns=columns)
 
 # 路由：登录页面
 @app.route('/login', methods=['GET', 'POST'])
