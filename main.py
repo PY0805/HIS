@@ -3,7 +3,7 @@ from role_class import *
 if __name__ == "__main__":
 
     """
-    print("Enter your role (1.admin\n2.doctor\n3.patient\n4.pharmacy_admin\n5.pharmacy_nurse\n6.UnauthorizedRole\n")
+    print("Enter your role (1.admin\n2.doctor\n3.patient\n4.pharmacy_admin\n5.pharmacy_nurse\n6.UnauthorizedRole\n7.SupplierRole\n):
     role = input().lower()
     roles = {
         'admin': AdminRole,
@@ -12,6 +12,7 @@ if __name__ == "__main__":
         'pharmacy_admin': PharmacyAdminRole,
         'pharmacy_nurse': PharmacyNurseRole,
         'UnauthorizedRole': UnauthorizedRole,
+        'SupplierRole': SupplierRole
     }
     
     if role in roles:
