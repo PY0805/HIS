@@ -119,8 +119,8 @@ class DoctorRole(RoleBase):
         sql = "UPDATE doctor SET password = {} ,introduction = {}, photo={} WHERE doctor_id ={} ".format(
             new_passwd,
             new_introduction,
-            doctor_id,
-            img2bin(doctor_photo))
+            img2bin(doctor_photo),
+            doctor_id)
         try:
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
