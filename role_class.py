@@ -33,9 +33,9 @@ class RoleBase:
 
 class AdminRole(RoleBase):
     def query(self, column_name, table_name, id_name, id_num):
-        sql = "SELECT {} FROM {} where {}={}".format(column_name, table_name, id_name, id_num)
-        result = []
         try:
+            sql = "SELECT {} FROM {} where {}={}".format(column_name, table_name, id_name, id_num)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：case
             data_s = self.db_manager.cur.fetchall()
@@ -50,8 +50,8 @@ class AdminRole(RoleBase):
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def insert(self, column_name, table_name, data):
-        sql = "INSERT INTO {} ({}) VALUES ({})".format(table_name, column_name, data)
         try:
+            sql = "INSERT INTO {} ({}) VALUES ({})".format(table_name, column_name, data)
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
         except Exception as e:
@@ -64,8 +64,8 @@ class AdminRole(RoleBase):
         return "插入成功"
 
     def update(self, column_name, column_value, table_name, id_name, id_num):
-        sql = "UPDATE {} SET {}={} WHERE {}={}".format(table_name, column_name, column_value, id_name, id_num)
         try:
+            sql = "UPDATE {} SET {}={} WHERE {}={}".format(table_name, column_name, column_value, id_name, id_num)
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
         except Exception as e:
@@ -76,8 +76,8 @@ class AdminRole(RoleBase):
         return "更新成功"
 
     def remove(self, table_name, id_name, id_num):
-        sql = "DELETE FROM {} WHERE {}={}".format(table_name, id_name, id_num)
         try:
+            sql = "DELETE FROM {} WHERE {}={}".format(table_name, id_name, id_num)
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
         except Exception as e:
@@ -90,9 +90,9 @@ class AdminRole(RoleBase):
 
 class DoctorRole(RoleBase):
     def query_information(self, doctor_id):
-        sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
-        result = []
         try:
+            sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：case
             data_s = self.db_manager.cur.fetchall()
@@ -107,9 +107,9 @@ class DoctorRole(RoleBase):
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def query_schedule(self, doctor_id):
-        sql = "select * from schedule where doctor_id={}".format(doctor_id)
-        result = []
         try:
+            sql = "select * from schedule where doctor_id={}".format(doctor_id)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：
             data_s = self.db_manager.cur.fetchall()
@@ -124,9 +124,9 @@ class DoctorRole(RoleBase):
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def query_diagnosis(self, doctor_id):
-        sql = "select * from diagnosis where doctor_id={}".format(doctor_id)
-        result = []
         try:
+            sql = "select * from diagnosis where doctor_id={}".format(doctor_id)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：
             data_s = self.db_manager.cur.fetchall()
@@ -141,33 +141,33 @@ class DoctorRole(RoleBase):
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def update_information(self, new_passwd, new_introduction, doctor_id, doctor_photo):
-        sql = "UPDATE doctor SET password = {} ,introduction = {}, photo={} WHERE doctor_id ={} ".format(
-            new_passwd,
-            new_introduction,
-            img2bin(doctor_photo),
-            doctor_id)
         try:
-            self.db_manager.cur.execute(sql)
-            self.db_manager.conn.commit()
-            return "更新成功"
-        except:
-            return "更新失败"
-
-    def update_schedule_state(self, new_status, doctor_id, schedule_id):
-        sql = "UPDATE schedule SET state = {} WHERE doctor_id={} and schedule_id={}".format(new_status, doctor_id,
-                                                                                            schedule_id)
-        try:
+            sql = "UPDATE doctor SET password = {} ,introduction = {}, photo={} WHERE doctor_id ={} ".format(
+                new_passwd,
+                new_introduction,
+                img2bin(doctor_photo),
+                doctor_id)
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
         except:
             return "更新失败"
         return "更新成功"
 
-    def insert_prescription(self, doctor_id, patient_id, content, prescription_id, name, nurse_id):
-        sql = "INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id) VALUES ({}, " \
-              "{}, {},{},{},{})".format(
-            doctor_id, patient_id, content, prescription_id, str(name), nurse_id)
+    def update_schedule_state(self, new_status, doctor_id, schedule_id):
         try:
+            sql = "UPDATE schedule SET state = {} WHERE doctor_id={} and schedule_id={}".format(new_status, doctor_id,
+                                                                                                schedule_id)
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+        except Exception:
+            return "更新失败"
+        return "更新成功"
+
+    def insert_prescription(self, doctor_id, patient_id, content, prescription_id, name, nurse_id):
+        try:
+            sql = "INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id) VALUES ({}, " \
+                  "{}, {},{},{},{})".format(
+                doctor_id, patient_id, content, prescription_id, str(name), nurse_id)
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
         except Exception as e:
@@ -182,9 +182,9 @@ class DoctorRole(RoleBase):
 
 class NurseRole(RoleBase):
     def query_information(self, doctor_id):
-        sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
-        result = []
         try:
+            sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：case
             data_s = self.db_manager.cur.fetchall()
@@ -201,9 +201,9 @@ class NurseRole(RoleBase):
 
 class SupplierRole(RoleBase):
     def query_information(self, supplier_id):
-        sql = "SELECT * FROM supplier WHERE supplier_id = {} ".format(supplier_id)
-        result = []
         try:
+            sql = "SELECT * FROM supplier WHERE supplier_id = {} ".format(supplier_id)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：case
             data_s = self.db_manager.cur.fetchall()
@@ -218,23 +218,23 @@ class SupplierRole(RoleBase):
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def update_information(self, new_passwd, new_person, new_phone_number, new_address, supplier_id):
-        sql = "UPDATE supplier SET password = {} ,person = {}, phone_number={}, address={} WHERE supplier_id ={} ".format(
-            new_passwd,
-            new_person,
-            new_phone_number,
-            new_address,
-            supplier_id)
         try:
+            sql = "UPDATE supplier SET password = {} ,person = {}, phone_number={}, address={} WHERE supplier_id ={} ".format(
+                new_passwd,
+                new_person,
+                new_phone_number,
+                new_address,
+                supplier_id)
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
             return "更新成功"
-        except:
+        except Exception:
             return "更新失败"
 
     def query_supply_drug(self, supplier_id):
-        sql = "select * from drug where supplier_id={}".format(supplier_id)
-        result = []
         try:
+            sql = "select * from drug where supplier_id={}".format(supplier_id)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
             data_s = self.db_manager.cur.fetchall()
@@ -252,33 +252,39 @@ class SupplierRole(RoleBase):
 class UnauthorizedRole(RoleBase):
 
     def query_department(self, department_id):
-        sql = "select department_id,department_name,hospital_id from department where department_id={}".format(
-            department_id)
-        result = []
-        self.db_manager.cur.execute(sql)
-        self.db_manager.conn.commit()  # 提交当前事务：
-        data_s = self.db_manager.cur.fetchall()
-        for data in data_s:
-            data_dict = dict(data)
-            result.append(data_dict)
+        try:
+            sql = "select department_id,department_name,hospital_id from department where department_id={}".format(
+                department_id)
+            result = []
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except:
+            return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def query_hospital(self, id_num):
-        super(UnauthorizedRole, )
-        sql = "select * from hospital WHERE hospital_id={}".format(id_num)
-        result = []
-        self.db_manager.cur.execute(sql)
-        self.db_manager.conn.commit()  # 提交当前事务：
-        data_s = self.db_manager.cur.fetchall()
-        for data in data_s:
-            data_dict = dict(data)
-            result.append(data_dict)
+        try:
+            super(UnauthorizedRole, )
+            sql = "select * from hospital WHERE hospital_id={}".format(id_num)
+            result = []
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except Exception:
+            return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def query_doctor(self, doctor_id):
-        sql = "select name,photo,department_id,title from doctor where doctor_id={}".format(doctor_id)
-        result = []
         try:
+            sql = "select name,photo,department_id,title from doctor where doctor_id={}".format(doctor_id)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：
             data_s = self.db_manager.cur.fetchall()
@@ -293,9 +299,9 @@ class UnauthorizedRole(RoleBase):
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def query_schedule(self, doctor_id):
-        sql = "select date,time,state,room_id from schedule where doctor_id={}".format(doctor_id)
-        result = []
         try:
+            sql = "select date,time,state,room_id from schedule where doctor_id={}".format(doctor_id)
+            result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：
             data_s = self.db_manager.cur.fetchall()
