@@ -34,12 +34,19 @@ class RoleBase:
 class AdminRole(RoleBase):
     def query(self, column_name, table_name, id_name, id_num):
         sql = "SELECT {} FROM {} where {}={}".format(column_name, table_name, id_name, id_num)
-        self.db_manager.cur.execute(sql)
         result = []
-        data_s = self.db_manager.cur.fetchall()
-        for data in data_s:
-            data_dict = dict(data)
-            result.append(data_dict)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：case
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def insert(self, column_name, table_name, data):
@@ -47,7 +54,6 @@ class AdminRole(RoleBase):
         try:
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
-            return "插入成功"
         except Exception as e:
             if "permission denied" in str(e):
                 return "权限不足"
@@ -55,64 +61,83 @@ class AdminRole(RoleBase):
                 return "插入序号已经存在"
             else:
                 return "插入失败"
+        return "插入成功"
 
     def update(self, column_name, column_value, table_name, id_name, id_num):
         sql = "UPDATE {} SET {}={} WHERE {}={}".format(table_name, column_name, column_value, id_name, id_num)
         try:
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
-            return "更新成功"
         except Exception as e:
             if "permission denied" in str(e):
                 return "权限不足"
             else:
                 return "插入失败"
+        return "更新成功"
 
     def remove(self, table_name, id_name, id_num):
         sql = "DELETE FROM {} WHERE {}={}".format(table_name, id_name, id_num)
         try:
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
-            return "删除成功"
         except Exception as e:
             if "permission denied" in str(e):
                 return "权限不足"
             else:
                 return "插入失败"
+        return "删除成功"
 
 
 class DoctorRole(RoleBase):
     def query_information(self, doctor_id):
         sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
         result = []
-        self.db_manager.cur.execute(sql)
-        self.db_manager.conn.commit()  # 提交当前事务：case
-        data_s = self.db_manager.cur.fetchall()
-        for data in data_s:
-            data_dict = dict(data)
-            result.append(data_dict)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：case
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def query_schedule(self, doctor_id):
         sql = "select * from schedule where doctor_id={}".format(doctor_id)
         result = []
-        self.db_manager.cur.execute(sql)
-        self.db_manager.conn.commit()  # 提交当前事务：
-        data_s = self.db_manager.cur.fetchall()
-        for data in data_s:
-            data_dict = dict(data)
-            result.append(data_dict)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def query_diagnosis(self, doctor_id):
         sql = "select * from diagnosis where doctor_id={}".format(doctor_id)
         result = []
-        self.db_manager.cur.execute(sql)
-        self.db_manager.conn.commit()  # 提交当前事务：
-        data_s = self.db_manager.cur.fetchall()
-        for data in data_s:
-            data_dict = dict(data)
-            result.append(data_dict)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def update_information(self, new_passwd, new_introduction, doctor_id, doctor_photo):
@@ -134,9 +159,9 @@ class DoctorRole(RoleBase):
         try:
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
-            return "更新成功"
         except:
             return "更新失败"
+        return "更新成功"
 
     def insert_prescription(self, doctor_id, patient_id, content, prescription_id, name, nurse_id):
         sql = "INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id) VALUES ({}, " \
@@ -145,7 +170,6 @@ class DoctorRole(RoleBase):
         try:
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
-            return "插入成功"
         except Exception as e:
             if "permission denied" in str(e):
                 return "权限不足"
@@ -153,18 +177,25 @@ class DoctorRole(RoleBase):
                 return "插入序号已经存在"
             else:
                 return "插入失败"
+        return "插入成功"
 
 
 class NurseRole(RoleBase):
     def query_information(self, doctor_id):
         sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
         result = []
-        self.db_manager.cur.execute(sql)
-        self.db_manager.conn.commit()  # 提交当前事务：case
-        data_s = self.db_manager.cur.fetchall()
-        for data in data_s:
-            data_dict = dict(data)
-            result.append(data_dict)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：case
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
 
@@ -172,12 +203,18 @@ class SupplierRole(RoleBase):
     def query_information(self, supplier_id):
         sql = "SELECT * FROM supplier WHERE supplier_id = {} ".format(supplier_id)
         result = []
-        self.db_manager.cur.execute(sql)
-        self.db_manager.conn.commit()  # 提交当前事务：case
-        data_s = self.db_manager.cur.fetchall()
-        for data in data_s:
-            data_dict = dict(data)
-            result.append(data_dict)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：case
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
     def update_information(self, new_passwd, new_person, new_phone_number, new_address, supplier_id):
@@ -193,6 +230,23 @@ class SupplierRole(RoleBase):
             return "更新成功"
         except:
             return "更新失败"
+
+    def query_supply_drug(self, supplier_id):
+        sql = "select * from drug where supplier_id={}".format(supplier_id)
+        result = []
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
+        return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
 
 class UnauthorizedRole(RoleBase):
