@@ -251,7 +251,6 @@ db_log = {
         'password': 'testGauss.',
         'host': '121.36.55.115',
         'port': '5432'
-
     },
     'doctor': {
         'database': 'HIS',
@@ -266,7 +265,6 @@ db_log = {
         'password': 'testGauss.',
         'host': '121.36.55.115',
         'port': '5432'
-
     },
     'pharmacy_admin': {
         'database': 'HIS',
@@ -274,7 +272,6 @@ db_log = {
         'password': 'testGauss.',
         'host': '121.36.55.115',
         'port': '5432'
-
     },
     'pharmacy_nurse': {
         'database': 'HIS',
@@ -282,7 +279,13 @@ db_log = {
         'password': 'testGauss.',
         'host': '121.36.55.115',
         'port': '5432'
-
+    },
+    'supplier': {
+        'database': 'HIS',
+        'user': 'test',
+        'password': 'testGauss.',
+        'host': '121.36.55.115',
+        'port': '5432'
     },
     'UnauthorizedRole': {
         'database': 'HIS',
