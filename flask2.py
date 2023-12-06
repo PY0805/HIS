@@ -1,14 +1,17 @@
 from datetime import datetime
 
-from flask import Flask, render_template, request, redirect, url_for,session
+from flask import Flask, render_template, request, redirect, url_for, session
 import psycopg2
 import json
 import base64
 import time
 from role_class import *
+
 app = Flask(__name__)
 db_manager = DatabaseManager(db_log['UnauthorizedRole'])  # 未授权用户登录
 UnloginRole = UnauthorizedRole(db_manager, 'UnauthorizedRole')  # 创建未授权用户
+
+
 def create_conn():
     database = 'HIS'  # 选择数据库名称
     user = 'test'
@@ -17,13 +20,16 @@ def create_conn():
     port = '5432'
     conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)  # 连接数据库
     return conn
+
+
 def get_table_columns(table):
     conn = create_conn()
     cursor = conn.cursor()
-    cursor.execute(f'SELECT * FROM %s LIMIT 1'%(table))
+    cursor.execute(f'SELECT * FROM %s LIMIT 1' % (table))
     columns = [column[0] for column in cursor.description]
     conn.close()
     return columns
+
 
 # 模拟医院基本信息数据
 hospital_info = {
@@ -43,6 +49,7 @@ user_roles = {
         'role': 'nurse',
     }
 }
+
 
 # 路由：总体页面
 @app.route('/')
@@ -65,7 +72,8 @@ def hospital_info_page():
     columns = get_table_columns('hospital')
     return render_template('hospital_info.html', data=None, search_term=None)
 
-#路由：医生信息页面
+
+# 路由：医生信息页面
 @app.route('/doctor_info', methods=['GET', 'POST'])
 def doctor_info_page():
     if request.method == 'POST':
@@ -77,6 +85,7 @@ def doctor_info_page():
         return render_template('doctor_info.html', data=data, search_term=search_term, columns=columns)
     columns = get_table_columns('doctor')
     return render_template('doctor_info.html', data=None, search_term=None, columns=columns)
+
 
 @app.route('/department_info', methods=['GET', 'POST'])
 def department_info_page():
@@ -90,6 +99,7 @@ def department_info_page():
 
     columns = get_table_columns('department')
     return render_template('department_info.html', data=None, search_term=None, columns=columns)
+
 
 @app.route('/schedule_info', methods=['GET', 'POST'])
 def schedule_info_page():
@@ -105,6 +115,16 @@ def schedule_info_page():
     columns = get_table_columns('schedule')
     return render_template('schedule_info.html', data=None, search_term=None, columns=columns)
 
+@app.route('/supplier_info', methods=['GET', 'POST'])
+def supplier_info_page():
+    if request.method == 'POST':
+        # 获取前端传递的参数
+        search_term = request.form['search_term']
+        data = eval(UnloginRole.query_supplier(search_term))
+
+        columns = get_table_columns('supplier')
+        # 渲染HTML页面，将查询结果传递给页面
+        return render_template('supplier_info.html', data=data, search_term=search_term, columns=columns)
 
 # 路由：登录页面
 @app.route('/login', methods=['GET', 'POST'])
@@ -119,26 +139,27 @@ def login():
         conn = create_conn()
         cursor = conn.cursor()
         # 使用参数进行查询
-        cursor.execute("SELECT doctor_id,job_number,password FROM doctor where job_number= {} union select nurse_id,job_number,password from nurse WHERE job_number= {} union select patient_id,phone,password from patient WHERE phone={}".format(job_number,job_number,job_number))
+        cursor.execute(
+            "SELECT doctor_id,job_number,password FROM doctor where job_number= {} union select nurse_id,job_number,password from nurse WHERE job_number= {} union select patient_id,phone,password from patient WHERE phone={}".format(
+                job_number, job_number, job_number))
 
         users = cursor.fetchall()
         # 验证用户名和密码
-        id=users[0][0]
+        id = users[0][0]
         user = users[0][1]
-        passwd =users[0][2]
+        passwd = users[0][2]
         conn.close()
 
-
-        if user and passwd == password and user[0] == '1' and len(user)==10:
+        if user and passwd == password and user[0] == '1' and len(user) == 10:
             # 如果验证通过，将用户信息存储在session中
             session['user_info'] = user
-            session['doctor_id']=id
+            session['doctor_id'] = id
             return redirect(url_for('doctor_dashboard'))
-        elif user and passwd == password and user[0] == '2' and len(user)==10:
+        elif user and passwd == password and user[0] == '2' and len(user) == 10:
             session['user_info'] = user
             session['nurse_id'] = id
             return redirect(url_for('nurse_dashboard'))
-        elif user and passwd == password and len(user)==11:
+        elif user and passwd == password and len(user) == 11:
             session['user_info'] = user
             return redirect(url_for('patient_dashboard'))
         else:
@@ -146,24 +167,27 @@ def login():
 
     return render_template('login.html', error=None)
 
+
 @app.route('/patient_dashboard')
 def patient_dashboard():
     user_info = session.get('user_info')
-    if user_info :
+    if user_info:
         # 在实际应用中，使用数据库连接执行查询
         # 这里假设有一个名为 'doctors' 的表存储医生信息
         conn = create_conn()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM patient WHERE phone = {} ".format(user_info))
         patient_info = cursor.fetchone()
-        patient_id=patient_info[0]
-        session['patient_id']=patient_id
+        patient_id = patient_info[0]
+        session['patient_id'] = patient_id
         patient_columns = [column[0] for column in cursor.description]
         conn.close()
 
-        return render_template('patient_dashboard.html', user_info=user_info, patient_info=patient_info,patient_columns=patient_columns)
+        return render_template('patient_dashboard.html', user_info=user_info, patient_info=patient_info,
+                               patient_columns=patient_columns)
     else:
         return redirect(url_for('login'))
+
 
 # 新增路由：医生个人信息编辑
 @app.route('/patient_profile', methods=['GET', 'POST'])
@@ -176,8 +200,8 @@ def edit_patient_profile():
     new_passwd = request.form.get('passwd')
     new_phone = request.form.get('new_phone')
     new_past = request.form.get('new_past')
-    new_allergy =request.form.get('new_allergy')
-    new_marry =request.form.get('new_marry')
+    new_allergy = request.form.get('new_allergy')
+    new_marry = request.form.get('new_marry')
     new_address = request.form.get('new_address')
     if user_info:
         if request.method == 'POST':
@@ -192,7 +216,9 @@ def edit_patient_profile():
             conn = create_conn()
             cursor = conn.cursor()
 
-            cursor.execute('UPDATE patient SET patient_id = {}, password = {} ,phone = {},past_history={},allergy={},marry={},address={} WHERE phone = {} '.format(new_id,new_passwd,new_phone,new_past,new_allergy,new_marry,new_address,user_info))
+            cursor.execute(
+                'UPDATE patient SET patient_id = {}, password = {} ,phone = {},past_history={},allergy={},marry={},address={} WHERE phone = {} '.format(
+                    new_id, new_passwd, new_phone, new_past, new_allergy, new_marry, new_address, user_info))
             conn.commit()
             conn.close()
 
@@ -203,18 +229,20 @@ def edit_patient_profile():
             patient_columns = [column[0] for column in cursor.description]
             conn.close()
 
-            return render_template('patient_dashboard.html', user_info=user_info, patient_info=patient_info,patient_columns=patient_columns)
+            return render_template('patient_dashboard.html', user_info=user_info, patient_info=patient_info,
+                                   patient_columns=patient_columns)
         else:
 
-            return render_template('patient_profile.html', id=new_id, passwd=new_passwd,new_phone=new_phone)
+            return render_template('patient_profile.html', id=new_id, passwd=new_passwd, new_phone=new_phone)
     else:
         return redirect(url_for('login'))
+
 
 @app.route('/patient_diagnosis')
 def patient_diagnosis():
     user_info = session.get('user_info')
     patient_id = session.get('patient_id')
-    if user_info :
+    if user_info:
         # 在实际应用中，使用数据库连接执行查询
         # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
         conn = create_conn()
@@ -224,15 +252,17 @@ def patient_diagnosis():
         columns = get_table_columns('diagnosis')
         conn.close()
 
-        return render_template('patient_diagnosis.html', columns=columns, patient_diagnosis=patient_diagnosis,patient_id=patient_id)
+        return render_template('patient_diagnosis.html', columns=columns, patient_diagnosis=patient_diagnosis,
+                               patient_id=patient_id)
     else:
         return redirect(url_for('login'))
+
 
 @app.route('/patient_case')
 def patient_case():
     user_info = session.get('user_info')
     patient_id = session.get('patient_id')
-    if user_info :
+    if user_info:
         # 在实际应用中，使用数据库连接执行查询
         # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
         conn = create_conn()
@@ -242,7 +272,7 @@ def patient_case():
         columns = get_table_columns('case')
         conn.close()
 
-        return render_template('patient_case.html', columns=columns, patient_case=patient_case,patient_id=patient_id)
+        return render_template('patient_case.html', columns=columns, patient_case=patient_case, patient_id=patient_id)
     else:
         return redirect(url_for('login'))
 
@@ -251,7 +281,7 @@ def patient_case():
 def patient_prescription():
     user_info = session.get('user_info')
     patient_id = session.get('patient_id')
-    if user_info :
+    if user_info:
         # 在实际应用中，使用数据库连接执行查询
         # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
         conn = create_conn()
@@ -261,9 +291,11 @@ def patient_prescription():
         columns = get_table_columns('prescription')
         conn.close()
 
-        return render_template('patient_prescription.html', columns=columns, patient_prescription=patient_prescription,patient_id=patient_id)
+        return render_template('patient_prescription.html', columns=columns, patient_prescription=patient_prescription,
+                               patient_id=patient_id)
     else:
         return redirect(url_for('login'))
+
 
 # 路由：医生仪表盘
 @app.route('/doctor_dashboard')
@@ -279,7 +311,8 @@ def doctor_dashboard():
         doctor_columns = [column[0] for column in cursor.description]
         conn.close()
 
-        return render_template('doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,doctor_columns=doctor_columns)
+        return render_template('doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,
+                               doctor_columns=doctor_columns)
     else:
         return redirect(url_for('login'))
 
@@ -304,7 +337,11 @@ def edit_doctor_profile():
             conn = create_conn()
             cursor = conn.cursor()
 
-            cursor.execute('UPDATE doctor SET doctor_id = {}, password = {} ,introduction = {} WHERE doctor_id ={} '.format(new_id,new_passwd,new_introduction,doctor_id))
+            cursor.execute(
+                'UPDATE doctor SET doctor_id = {}, password = {} ,introduction = {} WHERE doctor_id ={} '.format(new_id,
+                                                                                                                 new_passwd,
+                                                                                                                 new_introduction,
+                                                                                                                 doctor_id))
             conn.commit()
             conn.close()
 
@@ -315,13 +352,13 @@ def edit_doctor_profile():
             doctor_columns = [column[0] for column in cursor.description]
             conn.close()
 
-            return render_template('doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,doctor_columns=doctor_columns)
+            return render_template('doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,
+                                   doctor_columns=doctor_columns)
         else:
 
-            return render_template('doctor_profile.html', id=new_id, passwd=new_passwd,introduction=new_introduction)
+            return render_template('doctor_profile.html', id=new_id, passwd=new_passwd, introduction=new_introduction)
     else:
         return redirect(url_for('login'))
-
 
 
 # 新增路由：医生确认排班
@@ -329,8 +366,8 @@ def edit_doctor_profile():
 @app.route('/doctor_schedule')
 def doctor_schedule():
     user_info = session.get('user_info')
-    doctor_id=session.get('doctor_id')
-    if user_info :
+    doctor_id = session.get('doctor_id')
+    if user_info:
         # 在实际应用中，使用数据库连接执行查询
         # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
         conn = create_conn()
@@ -340,7 +377,8 @@ def doctor_schedule():
         columns = get_table_columns('schedule')
         conn.close()
 
-        return render_template('doctor_schedule.html', columns=columns, doctor_schedule=doctor_schedule,doctor_id=doctor_id)
+        return render_template('doctor_schedule.html', columns=columns, doctor_schedule=doctor_schedule,
+                               doctor_id=doctor_id)
     else:
         return redirect(url_for('login'))
 
@@ -350,7 +388,7 @@ def doctor_schedule():
 def confirm_schedule():
     user_info = session.get('user_info')
     doctor_id = session.get('doctor_id')
-    if user_info :
+    if user_info:
         if request.method == 'POST':
             # 处理修改排班状态的表单提交
             schedule_id = request.form.get('schedule_id')
@@ -359,7 +397,9 @@ def confirm_schedule():
             # 在实际应用中，更新数据库中排班信息的状态
             conn = create_conn()
             cursor = conn.cursor()
-            cursor.execute('UPDATE schedule SET state = {} WHERE doctor_id={} and schedule_id={}'.format(new_status,doctor_id,schedule_id))
+            cursor.execute(
+                'UPDATE schedule SET state = {} WHERE doctor_id={} and schedule_id={}'.format(new_status, doctor_id,
+                                                                                              schedule_id))
             conn.commit()
             conn.close()
 
@@ -371,15 +411,16 @@ def confirm_schedule():
         columns = get_table_columns('schedule')
         conn.close()
 
-        return render_template('confirm_schedule.html', user_info=user_info, schedule=schedule,columns=columns)
+        return render_template('confirm_schedule.html', user_info=user_info, schedule=schedule, columns=columns)
     else:
         return redirect(url_for('login'))
+
 
 @app.route('/doctor_diagnosis')
 def doctor_diagnosis():
     user_info = session.get('user_info')
-    doctor_id=session.get('doctor_id')
-    if user_info :
+    doctor_id = session.get('doctor_id')
+    if user_info:
         # 在实际应用中，使用数据库连接执行查询
         # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
         conn = create_conn()
@@ -389,7 +430,8 @@ def doctor_diagnosis():
         columns = get_table_columns('diagnosis')
         conn.close()
 
-        return render_template('doctor_diagnosis.html', columns=columns, doctor_diagnosis=doctor_diagnosis,doctor_id=doctor_id)
+        return render_template('doctor_diagnosis.html', columns=columns, doctor_diagnosis=doctor_diagnosis,
+                               doctor_id=doctor_id)
     else:
         return redirect(url_for('login'))
 
@@ -397,27 +439,30 @@ def doctor_diagnosis():
 @app.route('/prescriptions', methods=['GET', 'POST'])
 def prescriptions():
     user_info = session.get('user_info')
-    doctor_id= session.get('doctor_id')
-    if user_info :
+    doctor_id = session.get('doctor_id')
+    if user_info:
         if request.method == 'POST':
             # 处理处方开具表单提交
             patient_id = request.form.get('patient_id')
-            prescription_id= request.form.get('prescription_id')
+            prescription_id = request.form.get('prescription_id')
             content = request.form.get('content')
-            name= request.form.get('name')
-            nurse_id=request.form.get('nurse_id')
+            name = request.form.get('name')
+            nurse_id = request.form.get('nurse_id')
             prescription_date = datetime.now().timestamp()
 
             # 在实际应用中，将处方信息插入数据库
             conn = create_conn()
             cursor = conn.cursor()
-            cursor.execute('INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id) VALUES ({}, {}, {},{},{},{})'.format(doctor_id,patient_id,content,prescription_id,str(name),nurse_id))
+            cursor.execute(
+                'INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id) VALUES ({}, {}, {},{},{},{})'.format(
+                    doctor_id, patient_id, content, prescription_id, str(name), nurse_id))
             conn.commit()
             conn.close()
 
         return render_template('prescriptions.html', user_info=user_info)
     else:
         return redirect(url_for('login'))
+
 
 # 路由：护士仪表盘
 @app.route('/nurse_dashboard')
@@ -433,9 +478,11 @@ def nurse_dashboard():
         nurse_columns = [column[0] for column in cursor.description]
         conn.close()
 
-        return render_template('nurse_dashboard.html', user_info=user_info, nurse_info=nurse_info,nurse_columns=nurse_columns)
+        return render_template('nurse_dashboard.html', user_info=user_info, nurse_info=nurse_info,
+                               nurse_columns=nurse_columns)
     else:
         return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
     app.secret_key = 'your_secret_key'

@@ -115,9 +115,8 @@ class DoctorRole(RoleBase):
             result.append(data_dict)
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
 
-    def update_information(self, new_id, new_passwd, new_introduction, doctor_id, doctor_photo):
-        sql = "UPDATE doctor SET doctor_id = {}, password = {} ,introduction = {}, photo={} WHERE doctor_id ={} ".format(
-            new_id,
+    def update_information(self, new_passwd, new_introduction, doctor_id, doctor_photo):
+        sql = "UPDATE doctor SET password = {} ,introduction = {}, photo={} WHERE doctor_id ={} ".format(
             new_passwd,
             new_introduction,
             doctor_id,
@@ -167,6 +166,33 @@ class NurseRole(RoleBase):
             data_dict = dict(data)
             result.append(data_dict)
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
+
+
+class SupplierRole(RoleBase):
+    def query_information(self, supplier_id):
+        sql = "SELECT * FROM supplier WHERE supplier_id = {} ".format(supplier_id)
+        result = []
+        self.db_manager.cur.execute(sql)
+        self.db_manager.conn.commit()  # 提交当前事务：case
+        data_s = self.db_manager.cur.fetchall()
+        for data in data_s:
+            data_dict = dict(data)
+            result.append(data_dict)
+        return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
+
+    def update_information(self, new_passwd, new_person, new_phone_number, new_address, supplier_id):
+        sql = "UPDATE supplier SET password = {} ,person = {}, phone_number={}, address={} WHERE supplier_id ={} ".format(
+            new_passwd,
+            new_person,
+            new_phone_number,
+            new_address,
+            supplier_id)
+        try:
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+            return "更新成功"
+        except:
+            return "更新失败"
 
 
 class UnauthorizedRole(RoleBase):
