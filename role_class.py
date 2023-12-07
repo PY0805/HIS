@@ -1,7 +1,10 @@
+import time
+
 import psycopg2
 from psycopg2 import extras
 import json
 import os
+import datetime
 
 photo_path = r"static/images/doctor"
 
@@ -37,7 +40,6 @@ class AdminRole(RoleBase):
             sql = "SELECT {} FROM {} where {}={}".format(column_name, table_name, id_name, id_num)
             result = []
             self.db_manager.cur.execute(sql)
-            self.db_manager.conn.commit()  # 提交当前事务：case
             data_s = self.db_manager.cur.fetchall()
             for data in data_s:
                 data_dict = dict(data)
@@ -95,7 +97,6 @@ class DoctorRole(RoleBase):
                 doctor_id)
             result = []
             self.db_manager.cur.execute(sql)
-            self.db_manager.conn.commit()  # 提交当前事务：case
             data_s = self.db_manager.cur.fetchall()
             for data in data_s:
                 data_dict = dict(data)
@@ -112,7 +113,6 @@ class DoctorRole(RoleBase):
             sql = "select * from schedule where doctor_id={}".format(doctor_id)
             result = []
             self.db_manager.cur.execute(sql)
-            self.db_manager.conn.commit()  # 提交当前事务：
             data_s = self.db_manager.cur.fetchall()
             for data in data_s:
                 data_dict = dict(data)
@@ -129,7 +129,6 @@ class DoctorRole(RoleBase):
             sql = "select * from diagnosis where doctor_id={}".format(doctor_id)
             result = []
             self.db_manager.cur.execute(sql)
-            self.db_manager.conn.commit()  # 提交当前事务：
             data_s = self.db_manager.cur.fetchall()
             for data in data_s:
                 data_dict = dict(data)
@@ -187,7 +186,6 @@ class NurseRole(RoleBase):
             sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
             result = []
             self.db_manager.cur.execute(sql)
-            self.db_manager.conn.commit()  # 提交当前事务：case
             data_s = self.db_manager.cur.fetchall()
             for data in data_s:
                 data_dict = dict(data)
@@ -207,7 +205,6 @@ class DrugadminRole(RoleBase):
                 drugadmin_id)
             result = []
             self.db_manager.cur.execute(sql)
-            self.db_manager.conn.commit()  # 提交当前事务：case
             data_s = self.db_manager.cur.fetchall()
             for data in data_s:
                 data_dict = dict(data)
@@ -227,16 +224,29 @@ class DrugadminRole(RoleBase):
             return "更新失败"
         return "更新成功"
 
-    def update_drugin(self, in_number, drug_name, batch, n, notes, instruction, supplier_id):
+    def insert_drugin(self, in_number, drug_name, batch, n, notes, instruction, supplier_id, admin_id):
         try:
-            sql = "UPDATE drug SET n = {} ,notes = {}, instruction={} WHERE name ={} and batch={} and supplier_id={}".format(
-                in_number,
-                notes,
-                instruction,
+            sql1 = ("INSERT INTO drug (name, number, batch, state, n, time, supplier_id, notes, instruction) VALUES ({"
+                    "}, {}, {}, {}, {}, {}, {}, {}, {}) RETURNING drug_id").format(
                 drug_name,
+                in_number,
                 batch,
-                supplier_id)
-            self.db_manager.cur.execute(sql)
+                1,
+                n,
+                time.time(),
+                supplier_id,
+                notes,
+                instruction)
+            self.db_manager.cur.execute(sql1)
+            self.db_manager.conn.commit()
+            drug_id = self.db_manager.cur.fetchone()[0]
+            sql2 = "INSERT INTO drugin (in_number, time, admin_id, drug_id) VALUES ({}, {}, {}, {})".format(
+                in_number,
+                self.db_manager.cur.execute("SELECT time FROM drug WHERE drug_id = {}".format(drug_id)),
+                admin_id,
+                in_number,
+                drug_id)
+            self.db_manager.cur.execute(sql2)
             self.db_manager.conn.commit()
         except Exception:
             return "更新失败"
