@@ -91,7 +91,8 @@ class AdminRole(RoleBase):
 class DoctorRole(RoleBase):
     def query_information(self, doctor_id):
         try:
-            sql = "SELECT * FROM doctor WHERE job_number = {} ".format(doctor_id)
+            sql = "SELECT doctor_id, name, sex, age, phone_number, state, work_date, introduction, id_number, job_number, title, photo, department_id FROM doctor WHERE job_number = {} ".format(
+                doctor_id)
             result = []
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()  # 提交当前事务：case
@@ -197,6 +198,22 @@ class NurseRole(RoleBase):
             else:
                 return "查询失败"
         return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
+
+
+class DrugadminRole(RoleBase):
+    def query_information(self, drugadmin_id):
+        try:
+            sql = "SELECT drugadmin_id, name, sex, age, phone_number, work_date, id_number, job_number, state, photo FROM drugadmin WHERE drugadmin_id = {} ".format(
+                drugadmin_id)
+            result = []
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()  # 提交当前事务：case
+            data_s = self.db_manager.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+        except:
+            return "查询失败"
 
 
 class SupplierRole(RoleBase):
