@@ -215,6 +215,33 @@ class DrugadminRole(RoleBase):
         except:
             return "查询失败"
 
+    def update_information(self, new_phone_number, new_photo, drugadmin_id):
+        try:
+            sql = "UPDATE drugadmin SET phone_number = {} ,photo = {} WHERE drugadmin_id ={} ".format(
+                new_phone_number,
+                img2bin(new_photo),
+                drugadmin_id)
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+        except Exception:
+            return "更新失败"
+        return "更新成功"
+
+    def update_drugin(self, in_number, drug_name, batch, n, notes, instruction, supplier_id):
+        try:
+            sql = "UPDATE drug SET n = {} ,notes = {}, instruction={} WHERE drug_name ={} and batch={} and supplier_id={}".format(
+                in_number,
+                notes,
+                instruction,
+                drug_name,
+                batch,
+                supplier_id)
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+        except Exception:
+            return "更新失败"
+        return "更新成功"
+
 
 class SupplierRole(RoleBase):
     def query_information(self, supplier_id):
