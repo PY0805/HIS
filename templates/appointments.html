@@ -6,25 +6,25 @@
     <title>Appointments</title>
 </head>
 <body>
-    <h1>Appointments</h1>
-    <!-- 显示医生的就诊安排信息 -->
-    <p>Doctor {{ doctor_info.name }}'s Appointments:</p>
-    <!-- 添加就诊安排信息的表格 -->
-    <table border="1">
+<h1>Appointments</h1>
+<!-- 显示医生的就诊安排信息 -->
+<p>Doctor {{ doctor_info.name }}'s Appointments:</p>
+<!-- 添加就诊安排信息的表格 -->
+<table border="1">
+    <tr>
+        <th>Date</th>
+        <th>Time</th>
+        <!-- 其他就诊安排信息的表头 -->
+    </tr>
+    <!-- 循环显示每个就诊安排的信息 -->
+    {% for appointment in doctor_appointments %}
         <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <!-- 其他就诊安排信息的表头 -->
+            <td>{{ appointment.date }}</td>
+            <td>{{ appointment.time }}</td>
+            <!-- 其他就诊安排信息的单元格 -->
         </tr>
-        <!-- 循环显示每个就诊安排的信息 -->
-        {% for appointment in doctor_appointments %}
-            <tr>
-                <td>{{ appointment.date }}</td>
-                <td>{{ appointment.time }}</td>
-                <!-- 其他就诊安排信息的单元格 -->
-            </tr>
-        {% endfor %}
-    </table>
-    <p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
+    {% endfor %}
+</table>
+<p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
 </body>
 </html>

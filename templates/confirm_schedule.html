@@ -6,40 +6,39 @@
     <title>Confirm Schedule</title>
 </head>
 <body>
-    <h1>Confirm Schedule</h1>
+<h1>Confirm Schedule</h1>
 
-    <!-- 显示未确认的排班日程 -->
-    <table border="1">
-        <td>
-               <form method="post" action="{{ url_for('confirm_schedule', schedule_id=schedule.id)}}">
-                        <select name="new_status">
-                            <option value="1">确认</option>
-                            <option value="2">已拒绝待处理</option>
-                            <!-- 添加其他状态选项 -->
-                        </select>
-                   <label for="schedule_id">ID:</label>
-                <input type="text" name="schedule_id" value="{{ schedule_id }}" required>
-                        <button type="submit">Update</button>
-                    </form>
-               </td>
-        <tr>
-                {% for column in columns %}
-                    <th>{{ column }}</th>
-                {% endfor %}
-            </tr>
-        {% for row in schedule %}
-           <tr>
-                    {% for value in row %}
-                        <td>{{ value }}</td>
-
-               {% endfor %}
-        </tr>
+<!-- 显示未确认的排班日程 -->
+<table border="1">
+    <td>
+        <form method="post" action="{{ url_for('confirm_schedule', schedule_id=schedule.id) }}">
+            <select name="new_status">
+                <option value="1">确认</option>
+                <option value="2">已拒绝待处理</option>
+                <!-- 添加其他状态选项 -->
+            </select>
+            <label for="schedule_id">ID:</label>
+            <input type="text" name="schedule_id" value="{{ schedule_id }}" required>
+            <button type="submit">Update</button>
+        </form>
+    </td>
+    <tr>
+        {% for column in columns %}
+            <th>{{ column }}</th>
         {% endfor %}
+    </tr>
+    {% for row in schedule %}
+        <tr>
+            {% for value in row %}
+                <td>{{ value }}</td>
+
+            {% endfor %}
+        </tr>
+    {% endfor %}
 
 
+</table>
 
-    </table>
-
-    <p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
+<p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
 </body>
 </html>

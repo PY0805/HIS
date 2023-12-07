@@ -6,29 +6,29 @@
     <title>Patient Diagnosis</title>
 </head>
 <body>
-    <h1>Patient Diagnosis</h1>
-    <!-- 显示医生排班日程的内容 -->
-    <!-- 添加排班信息的表格 -->
-   </form>
-    {% if patient_diagnosis %}
-        <h2>患者ID 为 '{{ patient_id }}'的就诊信息查询结果:</h2>
-        <table border="1">
+<h1>Patient Diagnosis</h1>
+<!-- 显示医生排班日程的内容 -->
+<!-- 添加排班信息的表格 -->
+</form>
+{% if patient_diagnosis %}
+    <h2>患者ID 为 '{{ patient_id }}'的就诊信息查询结果:</h2>
+    <table border="1">
+        <tr>
+            {% for column in columns %}
+                <th>{{ column }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in patient_diagnosis %}
             <tr>
-                {% for column in columns %}
-                    <th>{{ column }}</th>
+                {% for value in row %}
+                    <td>{{ value }}</td>
                 {% endfor %}
             </tr>
-            {% for row in patient_diagnosis %}
-                <tr>
-                    {% for value in row %}
-                        <td>{{ value }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>ID不存在</p>
-    {% endif %}
-    <p><a href="{{ url_for('patient_dashboard') }}">Back to Dashboard</a></p>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>ID不存在</p>
+{% endif %}
+<p><a href="{{ url_for('patient_dashboard') }}">Back to Dashboard</a></p>
 </body>
 </html>

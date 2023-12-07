@@ -6,33 +6,33 @@
     <title>Doctor Dashboard</title>
 </head>
 <body>
-    <h1>Welcome, Dr. {{ doctor_info[1] }}</h1>
+<h1>Welcome, Dr. {{ doctor_info[1] }}</h1>
 
-    {% if doctor_info %}
-        <h2>Your Information:</h2>
-        <table border="1">
-            <tr>
-                {% for column in doctor_columns %}
-                    <th>{{ column }}</th>
-                {% endfor %}
-            </tr>
-            <tr>
-                {% for value in doctor_info %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-            </tr>
-        </table>
-    {% else %}
-        <p>No information available.</p>
-    {% endif %}
+{% if doctor_info %}
+    <h2>Your Information:</h2>
+    <table border="1">
+        <tr>
+            {% for column in doctor_columns %}
+                <th>{{ column }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for value in doctor_info %}
+                <td>{{ value }}</td>
+            {% endfor %}
+        </tr>
+    </table>
+{% else %}
+    <p>No information available.</p>
+{% endif %}
 
-    <p><a href="{{ url_for('home') }}">Back to Home</a></p>
+<p><a href="{{ url_for('home') }}">Back to Home</a></p>
 <ul>
-        <li><a href="{{ url_for('edit_doctor_profile') }}">Edit Doctor Profile</a></li>
-        <li><a href="{{ url_for('doctor_schedule') }}">View Schedule</a></li>
-        <li><a href="{{ url_for('confirm_schedule') }}">Confirm Schedule</a></li>
-        <li><a href="{{ url_for('doctor_diagnosis') }}">View Diagnosis</a></li>
-        <li><a href="{{ url_for('prescriptions') }}">Prescriptions</a></li>
-    </ul>
+    <li><a href="{{ url_for('edit_doctor_profile') }}">Edit Doctor Profile</a></li>
+    <li><a href="{{ url_for('doctor_schedule') }}">View Schedule</a></li>
+    <li><a href="{{ url_for('confirm_schedule') }}">Confirm Schedule</a></li>
+    <li><a href="{{ url_for('doctor_diagnosis') }}">View Diagnosis</a></li>
+    <li><a href="{{ url_for('prescriptions') }}">Prescriptions</a></li>
+</ul>
 </body>
 </html>
