@@ -229,7 +229,7 @@ class DrugadminRole(RoleBase):
 
     def update_drugin(self, in_number, drug_name, batch, n, notes, instruction, supplier_id):
         try:
-            sql = "UPDATE drug SET n = {} ,notes = {}, instruction={} WHERE drug_name ={} and batch={} and supplier_id={}".format(
+            sql = "UPDATE drug SET n = {} ,notes = {}, instruction={} WHERE name ={} and batch={} and supplier_id={}".format(
                 in_number,
                 notes,
                 instruction,
