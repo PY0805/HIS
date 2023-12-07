@@ -25,7 +25,7 @@ def create_conn():
 def get_table_columns(table):
     conn = create_conn()
     cursor = conn.cursor()
-    cursor.execute(f'SELECT * FROM %s LIMIT 1' % (table))
+    cursor.execute(f'SELECT * FROM %s LIMIT 1' % table)
     columns = [column[0] for column in cursor.description]
     conn.close()
     return columns
