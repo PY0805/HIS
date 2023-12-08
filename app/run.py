@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-
-from role_class import *
+from settings import db_log, hospital_info
+from app.libs.DB import create_conn, get_table_columns
+from app.Roles import *
 
 app = Flask(__name__)
 db_manager = DatabaseManager(db_log['UnauthorizedRole'])  # 未授权用户登录
@@ -9,33 +10,6 @@ patient = Patient(db_log['patient'])
 patientRole = PatientRole(Patient, 'patient')
 drugadmin = Drugadmin(db_log['drugadmin'])
 drugadRole = DrugadminRole(drugadmin, 'drugadmin')
-
-
-def create_conn():
-    database = 'HIS'  # 选择数据库名称
-    user = 'test'
-    password = 'testGauss.'
-    host = '121.36.55.115'  # 数据库ip
-    port = '5432'
-    conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)  # 连接数据库
-    return conn
-
-
-def get_table_columns(table):
-    conn = create_conn()
-    cursor = conn.cursor()
-    cursor.execute(f'SELECT * FROM %s LIMIT 1' % (table))
-    columns = [column[0] for column in cursor.description]
-    conn.close()
-    return columns
-
-
-# 模拟医院基本信息数据
-hospital_info = {
-    'name': 'Example Hospital',
-    'address': '123 Main St',
-    'phone': '555-1234',
-}
 
 
 # 路由：总体页面
@@ -69,9 +43,9 @@ def doctor_info_page():
         data = eval(UnloginRole.query_doctor(search_term))
         columns = get_table_columns('doctor')
         # 渲染HTML页面，将查询结果传递给页面
-        return render_template('doctor_info.html', data=data, search_term=search_term, columns=columns)
+        return render_template('doctor/templates/doctor_info.html', data=data, search_term=search_term, columns=columns)
     columns = get_table_columns('doctor')
-    return render_template('doctor_info.html', data=None, search_term=None, columns=columns)
+    return render_template('doctor/templates/doctor_info.html', data=None, search_term=None, columns=columns)
 
 
 @app.route('/department_info', methods=['GET', 'POST'])
@@ -164,7 +138,7 @@ def patient_dashboard():
         patient_columns = [column[0] for column in cursor.description]
         conn.close()
 
-        return render_template('patient_dashboard.html', user_info=user_info, patient_info=patient_info,
+        return render_template('patient/patient_dashboard.html', user_info=user_info, patient_info=patient_info,
                                patient_columns=patient_columns)
     else:
         return redirect(url_for('login'))
@@ -210,11 +184,11 @@ def edit_patient_profile():
             patient_columns = [column[0] for column in cursor.description]
             conn.close()
 
-            return render_template('patient_dashboard.html', user_info=user_info, patient_info=patient_info,
+            return render_template('patient/patient_dashboard.html', user_info=user_info, patient_info=patient_info,
                                    patient_columns=patient_columns)
         else:
 
-            return render_template('patient_profile.html', id=new_id, passwd=new_passwd, new_phone=new_phone)
+            return render_template('patient/patient_profile.html', id=new_id, passwd=new_passwd, new_phone=new_phone)
     else:
         return redirect(url_for('login'))
 
@@ -233,7 +207,7 @@ def patient_diagnosis():
         columns = get_table_columns('diagnosis')
         conn.close()
 
-        return render_template('patient_diagnosis.html', columns=columns, patient_diagnosis=patient_diagnosis,
+        return render_template('patient/patient_diagnosis.html', columns=columns, patient_diagnosis=patient_diagnosis,
                                patient_id=patient_id)
     else:
         return redirect(url_for('login'))
@@ -253,7 +227,8 @@ def patient_case():
         columns = get_table_columns('case')
         conn.close()
 
-        return render_template('patient_case.html', columns=columns, patient_case=patient_case, patient_id=patient_id)
+        return render_template('patient/patient_case.html', columns=columns, patient_case=patient_case,
+                               patient_id=patient_id)
     else:
         return redirect(url_for('login'))
 
@@ -272,7 +247,8 @@ def patient_prescription():
         columns = get_table_columns('prescription')
         conn.close()
 
-        return render_template('patient_prescription.html', columns=columns, patient_prescription=patient_prescription,
+        return render_template('patient/patient_prescription.html', columns=columns,
+                               patient_prescription=patient_prescription,
                                patient_id=patient_id)
     else:
         return redirect(url_for('login'))
@@ -287,7 +263,7 @@ def drugadmin_dashboard():
         # 这里假设有一个名为 'doctors' 的表存储医生信息
         data = eval(drugadRole.query_information(drugadmin_id))
 
-        return render_template('drugadmin_dashboard.html', drugadmin_id=drugadmin_id, data=data)
+        return render_template('drugadmin/drugadmin_dashboard.html', drugadmin_id=drugadmin_id, data=data)
 
     else:
         return redirect(url_for('login'))
@@ -307,10 +283,10 @@ def edit_drugadmin_profile():
             # 从数据库查询更新后的信息
             data = eval(drugadRole.query_information(drugadmin_id))
 
-            return render_template('drugadmin_dashboard.html', drugadmin_id=drugadmin_id, data=data)
+            return render_template('drugadmin/drugadmin_dashboard.html', drugadmin_id=drugadmin_id, data=data)
 
         else:
-            return render_template('drugadmin_profile.html', drugadmin_id=drugadmin_id)
+            return render_template('drugadmin/drugadmin_profile.html', drugadmin_id=drugadmin_id)
     else:
         return redirect(url_for('login'))
 
@@ -332,12 +308,13 @@ def insert_drugin():
             admin_id = request.form.get('admin_id')
             drugadRole.insert_drugin(in_number, drug_name, batch, n, notes, instruction, supplier_id, admin_id)
 
-        return render_template('insert_drugin.html', user_info=user_info)
+        return render_template('drugadmin/insert_drugin.html', user_info=user_info)
     else:
         return redirect(url_for('login'))
 
 
-'''@app.route('/hospital_info', methods=['GET', 'POST'])
+'''
+@app.route('/hospital_info', methods=['GET', 'POST'])
 def hospital_info_page():
     if request.method == 'POST':
         # 获取前端传递的参数
@@ -367,7 +344,7 @@ def doctor_dashboard():
         doctor_columns = [column[0] for column in cursor.description]
         conn.close()
 
-        return render_template('doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,
+        return render_template('doctor/doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,
                                doctor_columns=doctor_columns)
     else:
         return redirect(url_for('login'))
@@ -408,11 +385,12 @@ def edit_doctor_profile():
             doctor_columns = [column[0] for column in cursor.description]
             conn.close()
 
-            return render_template('doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,
+            return render_template('doctor/doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,
                                    doctor_columns=doctor_columns)
         else:
 
-            return render_template('doctor_profile.html', id=new_id, passwd=new_passwd, introduction=new_introduction)
+            return render_template('doctor/doctor_profile.html', id=new_id, passwd=new_passwd,
+                                   introduction=new_introduction)
     else:
         return redirect(url_for('login'))
 
@@ -433,7 +411,7 @@ def doctor_schedule():
         columns = get_table_columns('schedule')
         conn.close()
 
-        return render_template('doctor_schedule.html', columns=columns, doctor_schedule=doctor_schedule,
+        return render_template('doctor/doctor_schedule.html', columns=columns, doctor_schedule=doctor_schedule,
                                doctor_id=doctor_id)
     else:
         return redirect(url_for('login'))
@@ -467,7 +445,7 @@ def confirm_schedule():
         columns = get_table_columns('schedule')
         conn.close()
 
-        return render_template('confirm_schedule.html', user_info=user_info, schedule=schedule, columns=columns)
+        return render_template('doctor/confirm_schedule.html', user_info=user_info, schedule=schedule, columns=columns)
     else:
         return redirect(url_for('login'))
 
@@ -486,7 +464,7 @@ def doctor_diagnosis():
         columns = get_table_columns('diagnosis')
         conn.close()
 
-        return render_template('doctor_diagnosis.html', columns=columns, doctor_diagnosis=doctor_diagnosis,
+        return render_template('doctor/doctor_diagnosis.html', columns=columns, doctor_diagnosis=doctor_diagnosis,
                                doctor_id=doctor_id)
     else:
         return redirect(url_for('login'))
@@ -510,12 +488,13 @@ def prescriptions():
             conn = create_conn()
             cursor = conn.cursor()
             cursor.execute(
-                'INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id) VALUES ({}, {}, {},{},{},{})'.format(
+                'INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id) VALUES ({}, '
+                '{}, {},{},{},{})'.format(
                     doctor_id, patient_id, content, prescription_id, str(name), nurse_id))
             conn.commit()
             conn.close()
 
-        return render_template('prescriptions.html', user_info=user_info)
+        return render_template('doctor/prescriptions.html', user_info=user_info)
     else:
         return redirect(url_for('login'))
 
@@ -534,7 +513,7 @@ def nurse_dashboard():
         nurse_columns = [column[0] for column in cursor.description]
         conn.close()
 
-        return render_template('nurse_dashboard.html', user_info=user_info, nurse_info=nurse_info,
+        return render_template('nurse/nurse_dashboard.html', user_info=user_info, nurse_info=nurse_info,
                                nurse_columns=nurse_columns)
     else:
         return redirect(url_for('login'))

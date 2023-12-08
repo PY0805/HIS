@@ -1,22 +1,12 @@
 import base64
 import json
 import os
-from datetime import datetime, date
+from datetime import datetime
 
 import psycopg2
 from psycopg2 import extras
 
-photo_path = r"static/images/doctor"
-
-
-class ComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.strftime('%Y-%m-%d %H:%M:%S')
-        elif isinstance(obj, date):
-            return obj.strftime('%Y-%m-%d')
-        else:
-            return json.JSONEncoder.default(self, obj)
+from app.libs.ComplexEncoder import ComplexEncoder
 
 
 class DatabaseManager:
@@ -65,12 +55,6 @@ class Doctor:
             port=db_role['port']
         )
         self.cur = self.conn.cursor(cursor_factory=extras.RealDictCursor)
-
-
-def img2bin(doctor_photo):
-    with open(os.path.join(photo_path, doctor_photo), 'rb') as f:
-        img = f.read()
-    return psycopg2.Binary(img)
 
 
 class RoleBase:
@@ -172,7 +156,7 @@ class DoctorRole(RoleBase):
             new_passwd,
             new_introduction,
             doctor_id,
-            img2bin(doctor_photo))
+            img2bin(photo, 'doctor'))
         try:
             self.db_manager.cur.execute(sql)
             self.db_manager.conn.commit()
@@ -439,51 +423,3 @@ class UnauthorizedRole(RoleBase):
                           cls=ComplexEncoder)
 
 
-db_log = {
-    'admin': {
-        'database': 'HIS',
-        'user': 'test',
-        'password': 'testGauss.',
-        'host': '121.36.55.115',
-        'port': '5432'
-
-    },
-    'doctor': {
-        'database': 'HIS',
-        'user': 'doctors',
-        'password': 'Doctors.',
-        'host': '121.36.55.115',
-        'port': '5432'
-    },
-    'patient': {
-        'database': 'HIS',
-        'user': 'test',
-        'password': 'testGauss.',
-        'host': '121.36.55.115',
-        'port': '5432'
-
-    },
-    'drugadmin': {
-        'database': 'HIS',
-        'user': 'test',
-        'password': 'testGauss.',
-        'host': '121.36.55.115',
-        'port': '5432'
-
-    },
-    'pharmacy_nurse': {
-        'database': 'HIS',
-        'user': 'test',
-        'password': 'testGauss.',
-        'host': '121.36.55.115',
-        'port': '5432'
-
-    },
-    'UnauthorizedRole': {
-        'database': 'HIS',
-        'user': 'introduce',
-        'password': 'Introduce.',
-        'host': '121.36.55.115',
-        'port': '5432'
-    },
-}
