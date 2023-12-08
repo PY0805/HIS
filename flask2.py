@@ -1,15 +1,14 @@
-from datetime import datetime
-
 from flask import Flask, render_template, request, redirect, url_for, session
-import psycopg2
-import json
-import base64
-import time
+
 from role_class import *
 
 app = Flask(__name__)
 db_manager = DatabaseManager(db_log['UnauthorizedRole'])  # 未授权用户登录
 UnloginRole = UnauthorizedRole(db_manager, 'UnauthorizedRole')  # 创建未授权用户
+patient = Patient(db_log['patient'])
+patientRole = PatientRole(Patient, 'patient')
+drugadmin = Drugadmin(db_log['drugadmin'])
+drugadRole = DrugadminRole(drugadmin, 'drugadmin')
 
 
 def create_conn():
@@ -25,7 +24,7 @@ def create_conn():
 def get_table_columns(table):
     conn = create_conn()
     cursor = conn.cursor()
-    cursor.execute(f'SELECT * FROM %s LIMIT 1' % table)
+    cursor.execute(f'SELECT * FROM %s LIMIT 1' % (table))
     columns = [column[0] for column in cursor.description]
     conn.close()
     return columns
@@ -36,18 +35,6 @@ hospital_info = {
     'name': 'Example Hospital',
     'address': '123 Main St',
     'phone': '555-1234',
-}
-
-# 模拟用户角色信息
-user_roles = {
-    'doctor': {
-        'name': 'Dr. John Doe',
-        'role': 'doctor',
-    },
-    'nurse': {
-        'name': 'Nurse Jane Smith',
-        'role': 'nurse',
-    }
 }
 
 
@@ -130,8 +117,8 @@ def login():
         cursor = conn.cursor()
         # 使用参数进行查询
         cursor.execute(
-            "SELECT doctor_id,job_number,password FROM doctor where job_number= {} union select nurse_id,job_number,password from nurse WHERE job_number= {} union select patient_id,phone,password from patient WHERE phone={}".format(
-                job_number, job_number, job_number))
+            "SELECT doctor_id,job_number,password FROM doctor where job_number= {} union select nurse_id,job_number,password from nurse WHERE job_number= {} union select patient_id,phone,password from patient WHERE phone={} union select drugadmin_id,job_number,password from drugadmin where job_number = {}".format(
+                job_number, job_number, job_number, job_number))
 
         users = cursor.fetchall()
         # 验证用户名和密码
@@ -149,8 +136,13 @@ def login():
             session['user_info'] = user
             session['nurse_id'] = id
             return redirect(url_for('nurse_dashboard'))
+        elif user and passwd == password and user[0] == '3' and len(user) == 10:
+            session['user_info'] = user
+            session['drugadmin_id'] = id
+            return redirect(url_for('drugadmin_dashboard'))
         elif user and passwd == password and len(user) == 11:
             session['user_info'] = user
+            session['patient_id'] = id
             return redirect(url_for('patient_dashboard'))
         else:
             return render_template('login.html', error='Invalid credentials. Please try again.')
@@ -161,6 +153,7 @@ def login():
 @app.route('/patient_dashboard')
 def patient_dashboard():
     user_info = session.get('user_info')
+    patient_id = session.get('patient_id')
     if user_info:
         # 在实际应用中，使用数据库连接执行查询
         # 这里假设有一个名为 'doctors' 的表存储医生信息
@@ -168,8 +161,6 @@ def patient_dashboard():
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM patient WHERE phone = {} ".format(user_info))
         patient_info = cursor.fetchone()
-        patient_id = patient_info[0]
-        session['patient_id'] = patient_id
         patient_columns = [column[0] for column in cursor.description]
         conn.close()
 
@@ -257,7 +248,7 @@ def patient_case():
         # 这里假设有一个名为 'doctor_schedule' 的表存储医生排班信息
         conn = create_conn()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM public.case WHERE patient_id = {}'.format(patient_id))
+        cursor.execute('SELECT * FROM case WHERE patient_id = {}'.format(patient_id))
         patient_case = cursor.fetchall()
         columns = get_table_columns('case')
         conn.close()
@@ -285,6 +276,81 @@ def patient_prescription():
                                patient_id=patient_id)
     else:
         return redirect(url_for('login'))
+
+
+@app.route('/drugadmin_dashboard')
+def drugadmin_dashboard():
+    user_info = session.get('user_info')
+    drugadmin_id = session.get('drugadmin_id')
+    if user_info:
+        # 在实际应用中，使用数据库连接执行查询
+        # 这里假设有一个名为 'doctors' 的表存储医生信息
+        data = eval(drugadRole.query_information(drugadmin_id))
+
+        return render_template('drugadmin_dashboard.html', drugadmin_id=drugadmin_id, data=data)
+
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/drugadmin_profile', methods=['GET', 'POST'])
+def edit_drugadmin_profile():
+    user_info = session.get('user_info')
+    drugadmin_id = session.get('drugadmin_id')
+
+    if user_info:
+        if request.method == 'POST':
+            new_phone = request.form.get('new_phone')
+            # 在数据库中更新药房管理员信息
+            drugadRole.update_information(new_phone, drugadmin_id)
+
+            # 从数据库查询更新后的信息
+            data = eval(drugadRole.query_information(drugadmin_id))
+
+            return render_template('drugadmin_dashboard.html', drugadmin_id=drugadmin_id, data=data)
+
+        else:
+            return render_template('drugadmin_profile.html', drugadmin_id=drugadmin_id)
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/insert_drugin', methods=['GET', 'POST'])
+def insert_drugin():
+    user_info = session.get('user_info')
+    drugadmin_id = session.get('drugadmin_id')
+    if user_info:
+        if request.method == 'POST':
+            # 处理处方开具表单提交
+            drug_name = request.form.get('drug_name')
+            in_number = request.form.get('in_number')
+            batch = request.form.get('batch')
+            supplier_id = request.form.get('supplier_id')
+            notes = request.form.get('notes')
+            instruction = request.form.get('instruction')
+            n = request.form.get('n')
+            admin_id = request.form.get('admin_id')
+            drugadRole.insert_drugin(in_number, drug_name, batch, n, notes, instruction, supplier_id, admin_id)
+
+        return render_template('insert_drugin.html', user_info=user_info)
+    else:
+        return redirect(url_for('login'))
+
+
+'''@app.route('/hospital_info', methods=['GET', 'POST'])
+def hospital_info_page():
+    if request.method == 'POST':
+        # 获取前端传递的参数
+        search_term = request.form['search_term']
+        # 使用参数进行查询
+        data = eval(UnloginRole.query_hospital(search_term))
+        columns = get_table_columns('hospital')
+        # 渲染HTML页面，将查询结果传递给页面
+        return render_template('hospital_info.html', data=data, search_term=search_term)
+
+    columns = get_table_columns('hospital')
+    return render_template('hospital_info.html', data=None, search_term=None)
+'''
 
 
 # 路由：医生仪表盘
