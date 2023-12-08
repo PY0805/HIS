@@ -344,7 +344,7 @@ def doctor_dashboard():
         doctor_columns = [column[0] for column in cursor.description]
         conn.close()
 
-        return render_template('doctor/doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,
+        return render_template('doctor/dashboard.html', user_info=user_info, doctor_info=doctor_info,
                                doctor_columns=doctor_columns)
     else:
         return redirect(url_for('login'))
@@ -385,11 +385,11 @@ def edit_doctor_profile():
             doctor_columns = [column[0] for column in cursor.description]
             conn.close()
 
-            return render_template('doctor/doctor_dashboard.html', user_info=user_info, doctor_info=doctor_info,
+            return render_template('doctor/dashboard.html', user_info=user_info, doctor_info=doctor_info,
                                    doctor_columns=doctor_columns)
         else:
 
-            return render_template('doctor/doctor_profile.html', id=new_id, passwd=new_passwd,
+            return render_template('doctor/profile.html', id=new_id, passwd=new_passwd,
                                    introduction=new_introduction)
     else:
         return redirect(url_for('login'))
@@ -411,7 +411,7 @@ def doctor_schedule():
         columns = get_table_columns('schedule')
         conn.close()
 
-        return render_template('doctor/doctor_schedule.html', columns=columns, doctor_schedule=doctor_schedule,
+        return render_template('doctor/schedule.html', columns=columns, doctor_schedule=doctor_schedule,
                                doctor_id=doctor_id)
     else:
         return redirect(url_for('login'))
@@ -464,7 +464,7 @@ def doctor_diagnosis():
         columns = get_table_columns('diagnosis')
         conn.close()
 
-        return render_template('doctor/doctor_diagnosis.html', columns=columns, doctor_diagnosis=doctor_diagnosis,
+        return render_template('doctor/diagnosis.html', columns=columns, doctor_diagnosis=doctor_diagnosis,
                                doctor_id=doctor_id)
     else:
         return redirect(url_for('login'))
@@ -512,11 +512,11 @@ def nurse_dashboard():
         nurse_info = cursor.fetchone()
         nurse_columns = [column[0] for column in cursor.description]
         conn.close()
-
         return render_template('nurse/nurse_dashboard.html', user_info=user_info, nurse_info=nurse_info,
                                nurse_columns=nurse_columns)
     else:
         return redirect(url_for('login'))
+
 
 
 if __name__ == '__main__':
