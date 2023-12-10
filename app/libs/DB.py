@@ -1,4 +1,5 @@
 import psycopg2
+
 from settings import DATABASE, USER, PASSWORD, HOST, PORT
 
 

@@ -22,7 +22,46 @@ class DatabaseManager:
         self.conn.close()
 
 
+class Drugadmin:
+    def __init__(self, db_role):
+        self.conn = psycopg2.connect(
+            database=db_role['database'], user=db_role['user'], password=db_role['password'], host=db_role['host'],
+            port=db_role['port']
+        )
+        self.cur = self.conn.cursor(cursor_factory=extras.RealDictCursor)
+
+    def close(self):
+        self.cur.close()
+        self.conn.close()
+
+
+class Doctor:
+    def __init__(self, db_role):
+        self.conn = psycopg2.connect(
+            database=db_role['database'], user=db_role['user'], password=db_role['password'], host=db_role['host'],
+            port=db_role['port']
+        )
+        self.cur = self.conn.cursor(cursor_factory=extras.RealDictCursor)
+
+    def close(self):
+        self.cur.close()
+        self.conn.close()
+
+
 class Patient:
+    def __init__(self, db_role):
+        self.conn = psycopg2.connect(
+            database=db_role['database'], user=db_role['user'], password=db_role['password'], host=db_role['host'],
+            port=db_role['port']
+        )
+        self.cur = self.conn.cursor(cursor_factory=extras.RealDictCursor)
+
+    def close(self):
+        self.cur.close()
+        self.conn.close()
+
+
+class Nurse:
     def __init__(self, db_role):
         self.conn = psycopg2.connect(
             database=db_role['database'], user=db_role['user'], password=db_role['password'], host=db_role['host'],
@@ -48,7 +87,7 @@ class Drugadmin:
         self.conn.close()
 
 
-class Doctor:
+class Supplier:
     def __init__(self, db_role):
         self.conn = psycopg2.connect(
             database=db_role['database'], user=db_role['user'], password=db_role['password'], host=db_role['host'],
@@ -322,6 +361,19 @@ class NurseRole(RoleBase):
                 return "权限不足"
             else:
                 return "查询失败"
+
+    def update_information(self, nurse_id, new_passwd, new_photo, new_phone):
+        try:
+            sql = "UPDATE nurse SET password = {}, photo = {}, phone = {} WHERE nurse_id = {} ".format(
+                new_passwd,
+                img2bin(new_photo, 'nurse'),
+                new_phone,
+                nurse_id)
+            self.db_manager.cur.execute(sql)
+            self.db_manager.conn.commit()
+            return "更新成功"
+        except:
+            return "更新失败"
 
 
 class DrugadminRole(RoleBase):

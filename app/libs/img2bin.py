@@ -1,4 +1,5 @@
 import os
+
 import psycopg2
 
 from settings import photo_path

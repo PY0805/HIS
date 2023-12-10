@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from settings import db_log, hospital_info
-from app.libs.DB import create_conn, get_table_columns
+
 from app.Roles import *
+from app.libs.DB import create_conn, get_table_columns
+from settings import db_log, hospital_info
 
 app = Flask(__name__)
 db_manager = DatabaseManager(db_log['UnauthorizedRole'])  # 未授权用户登录
@@ -516,6 +517,7 @@ def nurse_dashboard():
                                nurse_columns=nurse_columns)
     else:
         return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
     app.secret_key = 'your_secret_key'
