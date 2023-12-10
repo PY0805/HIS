@@ -6,26 +6,27 @@
     <title>Nurse Dashboard</title>
 </head>
 <body>
-<h1>Welcome, {{ nurse_info[1] }}</h1>
-
-{% if nurse_info %}
-    <h2>Your Information:</h2>
-    <table border="1">
-        <tr>
-            {% for column in nurse_columns %}
-                <th>{{ column }}</th>
+<div id="NurseInfo">
+    {% if data %}
+        <h2>ID 为 {{ nurse_id }}的供应商信息:</h2>
+        <ul>
+            {% for key, value in data.items() %}
+                {% if key == 'photo' %}
+                    <li><strong>{{ key }}:</strong> <img src="data:image/jpeg;base64,{{ value }}" alt="Nurse Photo">
+                    </li>
+                {% else %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endif %}
             {% endfor %}
-        </tr>
-        <tr>
-            {% for value in nurse_info %}
-                <td>{{ value }}</td>
-            {% endfor %}
-        </tr>
-    </table>
-{% else %}
-    <p>No information available.</p>
-{% endif %}
+        </ul>
+    {% else %}
+        <p>No information available.</p>
+    {% endif %}
+</div>
 
 <p><a href="{{ url_for('home') }}">Back to Home</a></p>
+<ul>
+    <li><a href="{{ url_for('edit_nurse_profile') }}">Edit Nurse Profile</a></li>
+
 </body>
 </html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑药房护士信息</title>
+</head>
+<body>
+<h1>编辑药房护士信息</h1>
+
+<!-- 单个表单用于电话和照片更改 -->
+<form method="post" action="{{ url_for('edit_nurse_profile') }}" enctype="multipart/form-data">
+    <!-- 电话号码字段 -->
+    <label for="new_phone">新电话：</label>
+    <input type="text" name="new_phone" value="{{ new_phone }}" >
+    <label for="new_passwd">新密码：</label>
+    <input type="text" name="new_passwd" value="{{ new_passwd }}" >
+
+    <!-- 用于电话和照片更改的提交按钮 -->
+    <button type="submit">保存更改</button>
+</form>
+
+<!-- 返回仪表板链接 -->
+<p><a href="{{ url_for('nurse_dashboard') }}">返回仪表板</a></p>
+</body>
+</html>
+

@@ -57,7 +57,7 @@ db_log = {
         'port': '5432'
 
     },
-    'UnauthorizedRole': {
+    'unauthorized': {
         'database': 'HIS',
         'user': 'introduce',
         'password': 'Introduce.',
