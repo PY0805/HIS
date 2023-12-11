@@ -8,15 +8,13 @@
 <body>
 <h1>Edit Nurse Profile</h1>
 
-<!-- 单个表单用于电话和照片更改 -->
 <form method="post" action="{{ url_for('edit_nurse_profile') }}" enctype="multipart/form-data">
-    <!-- 电话号码字段 -->
     <label for="new_phone">New Phone：</label>
     <input type="text" name="new_phone" value="{{ new_phone }}">
     <label for="new_passwd">New Password：</label>
     <input type="text" name="new_passwd" value="{{ new_passwd }}">
-
-    <!-- 用于电话和照片更改的提交按钮 -->
+    <label for="photo">Photo:</label>
+    <input type="file" name="file" value="{{ photo }}">
     <button type="submit">Save Changes</button>
 </form>
 

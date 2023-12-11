@@ -1,3 +1,6 @@
+import random
+import uuid
+
 from flask import Flask, render_template, request, redirect, url_for, session
 
 from Roles import *
@@ -117,8 +120,9 @@ def edit_doctor_profile():
     if user_info and user_info[0] == '1':
         if request.method == 'POST':
             new_passwd = request.form.get('passwd')
-            new_photo = request.form.get('photo')
             new_introduction = request.form.get('introduction')
+            new_photo = request.files['file']
+            new_photo.filename = uuid.uuid4().hex + '.' + new_photo.filename.split('.')[-1]
             doctorRole.update_information(new_passwd, new_introduction, new_photo, doctor_id)
             return redirect(url_for('login'))
         else:
@@ -243,8 +247,10 @@ def edit_patient_profile():
             new_allergy = request.form.get('new_allergy')
             new_marry = request.form.get('new_marry')
             new_address = request.form.get('new_address')
+            new_photo = request.files['file']
+            new_photo.filename = uuid.uuid4().hex + '.' + new_photo.filename.split('.')[-1]
             patientRole.update_information(new_passwd, new_phone, new_past, new_allergy, new_marry, new_address,
-                                           patient_id)
+                                           new_photo, patient_id)
             return redirect(url_for('login'))
         else:
             return render_template('patient/patient_profile.html', patient_id=patient_id)
@@ -317,7 +323,9 @@ def edit_nurse_profile():
         if request.method == 'POST':
             new_passwd = request.form.get('new_passwd')
             new_phone = request.form.get('new_phone')
-            nurseRole.update_information(nurse_id, new_passwd, new_phone)
+            new_photo = request.files['file']
+            new_photo.filename = uuid.uuid4().hex + '.' + new_photo.filename.split('.')[-1]
+            nurseRole.update_information(nurse_id, new_passwd, new_phone, new_photo)
             return redirect(url_for('login'))
         else:
             return render_template('nurse/nurse_profile.html', nurse_id=nurse_id)
@@ -358,7 +366,9 @@ def edit_drugadmin_profile():
     if user_info:
         if request.method == 'POST':
             new_phone = request.form.get('new_phone')
-            drugadminRole.update_information(new_phone, drugadmin_id)
+            new_photo = request.files['file']
+            new_photo.filename = uuid.uuid4().hex + '.' + new_photo.filename.split('.')[-1]
+            drugadminRole.update_information(new_phone, new_photo, drugadmin_id)
             return redirect(url_for('login'))
         else:
             return render_template('drugadmin/drugadmin_profile.html', drugadmin_id=drugadmin_id)

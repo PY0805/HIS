@@ -6,7 +6,6 @@ from psycopg2 import *
 from psycopg2 import extras
 
 from libs.ComplexEncoder import ComplexEncoder
-from libs.img2bin import img2bin
 
 
 class RoleBase:
@@ -110,15 +109,18 @@ class AdminRole(RoleBase):
 class DoctorRole(RoleBase):
     def query_information(self, job_number):
         try:
-            sql = "SELECT doctor_id, name, sex, age, phone_number, state, work_date, introduction, id_number, job_number, title, photo, department_id FROM doctor WHERE job_number = {} ".format(
+            sql = ("SELECT doctor_id, name, sex, age, phone_number, state, work_date, introduction, id_number, "
+                   "job_number, title, photo, department_id FROM doctor WHERE job_number = {} ").format(
                 job_number)
             result = []
             self.cur.execute(sql)
             self.conn.commit()  # 提交当前事务：case
             data_s = self.cur.fetchall()
+            print(data_s)
             for data in data_s:
                 data_dict = dict(data)
                 result.append(data_dict)
+            print(result)
             return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
         except Exception as e:
             if "permission denied" in str(e):
@@ -176,8 +178,7 @@ class DoctorRole(RoleBase):
 
             if doctor_photo != '':
                 self.cur.execute(
-                    "UPDATE doctor SET photo = {} WHERE doctor_id = {}".format(img2bin(doctor_photo, 'doctor'),
-                                                                               doctor_id))
+                    "UPDATE doctor SET photo = {} WHERE doctor_id = {}".format(Binary(doctor_photo.read()), doctor_id))
                 self.conn.commit()
 
             return "更新成功"
@@ -245,13 +246,18 @@ class DrugadminRole(RoleBase):
         except:
             return "查询失败"
 
-    def update_information(self, new_phone_number, drugadmin_id):
+    def update_information(self, new_phone_number, new_photo, drugadmin_id):
         try:
             if new_phone_number != '':
                 self.cur.execute(
                     "UPDATE drugadmin SET phone_number = {} WHERE drugadmin_id = {}".format(new_phone_number,
                                                                                             drugadmin_id))
                 self.conn.commit()
+
+            if new_photo != '':
+                self.cur.execute(
+                    "UPDATE drugadmin SET photo = {} WHERE drugadmin_id = {} ".format(Binary(new_photo.read()),
+                                                                                      drugadmin_id))
                 self.conn.commit()
 
             return "更新成功"
@@ -313,7 +319,7 @@ class NurseRole(RoleBase):
             else:
                 return "查询失败"
 
-    def update_information(self, nurse_id, new_passwd, new_phone):
+    def update_information(self, nurse_id, new_passwd, new_phone, new_photo):
         try:
             if new_passwd != '':
                 self.cur.execute(
@@ -322,6 +328,10 @@ class NurseRole(RoleBase):
             if new_phone != '':
                 self.cur.execute(
                     "UPDATE nurse SET phone = {} WHERE nurse_id = {}".format(new_phone, nurse_id))
+                self.conn.commit()
+            if new_photo != '':
+                self.cur.execute(
+                    "UPDATE nurse SET photo = {} WHERE nurse_id = {} ".format(Binary(new_photo.read()), nurse_id))
                 self.conn.commit()
             return "更新成功"
         except Exception as e:
@@ -391,7 +401,9 @@ class NurseRole(RoleBase):
                     for i in range(0, len(result), 2):
                         self.insert_drugout(result[i], result[i + 1], nurse_id)
                     self.cur.execute(
-                        "UPDATE prescription SET state = 2 WHERE prescription_id = {}".format(prescription_id))
+                        "UPDATE prescription SET state = 2, nurse_id = {} WHERE prescription_id = {}".format(nurse_id,
+                                                                                                             prescription_id))
+                    self.conn.commit()
                     return f'处方{prescription_id}处理成功'
                 except Exception as e:
                     print(e)
@@ -416,12 +428,11 @@ class PatientRole(RoleBase):
             return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
                               cls=ComplexEncoder)
         except Exception as e:
-            if "permission denied" in str(e):
-                return "权限不足"
-            else:
-                return "查询失败"
+            print(e)
+            return "查询失败"
 
-    def update_information(self, new_passwd, new_phone, new_past, new_allergy, new_marry, new_address, patient_id):
+    def update_information(self, new_passwd, new_phone, new_past, new_allergy, new_marry, new_address, new_photo,
+                           patient_id):
         try:
             if new_passwd != '':
                 self.cur.execute(
@@ -451,6 +462,11 @@ class PatientRole(RoleBase):
             if new_address != '':
                 self.cur.execute(
                     "UPDATE patient SET address = {} WHERE patient_id = {} ;".format(new_address, patient_id))
+                self.conn.commit()
+
+            if new_photo != '':
+                self.cur.execute(
+                    "UPDATE patient SET photo = {} WHERE patient_id = {} ".format(Binary(new_photo.read()), patient_id))
                 self.conn.commit()
 
             return "更新成功"

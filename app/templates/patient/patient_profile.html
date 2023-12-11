@@ -8,7 +8,7 @@
 <body>
 <h1>Edit Patient Profile</h1>
 <!-- 包含医生个人信息的表单 -->
-<form method="post" action="{{ url_for('edit_patient_profile') }}">
+<form method="post" action="{{ url_for('edit_patient_profile') }}" enctype="multipart/form-data">
     <!-- 添加相应的表单字段，如姓名、联系方式等 -->
     <label for="passwd">Password:</label>
     <input type="text" name="passwd" value="{{ passwd }}">
@@ -22,6 +22,8 @@
     <input type="text" name="new_marry" value="{{ new_marry }}">
     <label for="new_address">New_address:</label>
     <input type="text" name="new_address" value="{{ new_address }}">
+    <label for="photo">Photo:</label>
+    <input type="file" name="file" value="{{ photo }}">
     <button type="submit">Save Changes</button>
 </form>
 <p><a href="{{ url_for('patient_dashboard') }}">Back to Dashboard</a></p>
