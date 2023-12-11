@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Drugadmin Profile</title>
+</head>
+<body>
+<h1>Edit Drugadmin Profile</h1>
+
+<!-- 单个表单用于电话和照片更改 -->
+<form method="post" action="{{ url_for('edit_drugadmin_profile') }}" enctype="multipart/form-data">
+    <!-- 电话号码字段 -->
+    <label for="new_phone">New Phone：</label>
+    <input type="text" name="new_phone" value="{{ new_phone }}">
+
+    <!-- 用于电话和照片更改的提交按钮 -->
+    <button type="submit">Save Changes</button>
+</form>
+
+<!-- 返回仪表板链接 -->
+<p><a href="{{ url_for('drugadmin_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>
+

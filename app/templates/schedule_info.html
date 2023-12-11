@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>schedule Information</title>
+</head>
+<body>
+<p><a href="{{ url_for('home') }}">Back to Home</a></p>
+<h1>排班日程信息查询</h1>
+<form method="post" action="{{ url_for('schedule_info_page') }}">
+    <label for="search_term">要查询的排班日程的医生ID</label>
+    <input type="text" name="search_term" id="search_term">
+    <button type="submit">搜索</button>
+    <div id="hospitalInfo">
+        {% if data %}
+            <h2>医生ID 为 {{ search_term }}的排班信息:</h2>
+            <ul>
+                {% for key, value in data.items() %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No information available.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

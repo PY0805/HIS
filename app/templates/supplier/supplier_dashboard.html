@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Dashboard</title>
+</head>
+<body>
+<div id="SupplierInfo">
+    {% if data %}
+        <h2>ID 为 {{ supplier_id }}的供应商信息:</h2>
+        <ul>
+            {% for key, value in data.items() %}
+                {% if key == 'photo' %}
+                    <li><strong>{{ key }}:</strong> <img src="data:image/jpeg;base64,{{ value }}" alt="Doctor Photo">
+                    </li>
+                {% else %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No information available.</p>
+    {% endif %}
+</div>
+
+<p><a href="{{ url_for('home') }}">Back to Home</a></p>
+<ul>
+    <li><a href="{{ url_for('edit_supplier_profile') }}">Edit Supplier Profile</a></li>
+    <li><a href="{{ url_for('query_drug_supplied') }}">Query_drug_supplied</a></li>
+</ul>
+</body>
+</html>

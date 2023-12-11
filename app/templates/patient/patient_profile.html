@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Patient Profile</title>
+</head>
+<body>
+<h1>Edit Patient Profile</h1>
+<!-- 包含医生个人信息的表单 -->
+<form method="post" action="{{ url_for('edit_patient_profile') }}">
+    <!-- 添加相应的表单字段，如姓名、联系方式等 -->
+    <label for="passwd">Password:</label>
+    <input type="text" name="passwd" value="{{ passwd }}">
+    <label for="new_phone">New_phone:</label>
+    <input type="text" name="new_phone" value="{{ new_phone }}">
+    <label for="new_past">New_pasthistory:</label>
+    <input type="text" name="new_past" value="{{ new_past }}">
+    <label for="new_allergy">New_allergy:</label>
+    <input type="text" name="new_allergy" value="{{ new_allergy }}">
+    <label for="new_marry">New_marry:</label>
+    <input type="text" name="new_marry" value="{{ new_marry }}">
+    <label for="new_address">New_address:</label>
+    <input type="text" name="new_address" value="{{ new_address }}">
+    <button type="submit">Save Changes</button>
+</form>
+<p><a href="{{ url_for('patient_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>
+
