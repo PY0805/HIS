@@ -12,13 +12,13 @@
 <form method="post" action="{{ url_for('edit_supplier_profile') }}" enctype="multipart/form-data">
     <!-- 电话号码字段 -->
     <label for="new_phone_number">新电话：</label>
-    <input type="text" name="new_phone_number" value="{{ new_phone_number }}" required>
+    <input type="text" name="new_phone_number" value="{{ new_phone_number }}">
     <label for="new_person">新人员：</label>
-    <input type="text" name="new_person" value="{{ new_person }}" required>
+    <input type="text" name="new_person" value="{{ new_person }}">
     <label for="new_passwd">新密码：</label>
-    <input type="text" name="new_passwd" value="{{ new_passwd }}" required>
+    <input type="text" name="new_passwd" value="{{ new_passwd }}">
     <label for="new_address">新地址：</label>
-    <input type="text" name="new_address" value="{{ new_address }}" required>
+    <input type="text" name="new_address" value="{{ new_address }}">
 
     <!-- 用于电话和照片更改的提交按钮 -->
     <button type="submit">保存更改</button>

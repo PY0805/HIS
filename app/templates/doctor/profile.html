@@ -11,11 +11,11 @@
 <form method="post" action="{{ url_for('edit_doctor_profile') }}">
     <!-- 添加相应的表单字段，如姓名、联系方式等 -->
     <label for="id">ID:</label>
-    <input type="text" name="id" value="{{ id }}" required>
+    <input type="text" name="id" value="{{ id }}" d>
     <label for="passwd">Password:</label>
-    <input type="text" name="passwd" value="{{ passwd }}" required>
+    <input type="text" name="passwd" value="{{ passwd }}" d>
     <label for="introduction">Introduction:</label>
-    <input type="text" name="introduction" value="{{ introduction }}" required>
+    <input type="text" name="introduction" value="{{ introduction }}" d>
     <button type="submit">Save Changes</button>
 </form>
 <p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>

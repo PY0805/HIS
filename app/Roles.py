@@ -1,8 +1,10 @@
 import base64
 import json
 from datetime import datetime
+
 from psycopg2 import *
 from psycopg2 import extras
+
 from libs.ComplexEncoder import ComplexEncoder
 from libs.img2bin import img2bin
 
@@ -71,13 +73,22 @@ class AdminRole(RoleBase):
 
     def login(self, username, password):
         try:
-            self.cur.execute(
-                "SELECT doctor_id,job_number,password FROM doctor where job_number= {} UNION SELECT nurse_id,job_number,"
-                "password FROM nurse WHERE job_number= {} UNION SELECT patient_id,phone,password FROM patient WHERE "
-                "phone={} UNION SELECT drugadmin_id,job_number,password FROM drugadmin where job_number = {} UNION SELECT "
-                "supplier_id,phone_number,password FROM supplier where phone_number = {}".format(
-                    username, username, username, username, username))
+            self.cur.execute("SELECT doctor_id,job_number,password FROM doctor where job_number= {}".format(username))
             data_s = self.cur.fetchall()
+            if data_s == []:
+                self.cur.execute("SELECT patient_id,phone,password FROM patient where phone= {}".format(username))
+                data_s = self.cur.fetchall()
+            if data_s == []:
+                self.cur.execute("SELECT nurse_id,job_number,password FROM nurse where job_number= {}".format(username))
+                data_s = self.cur.fetchall()
+            if data_s == []:
+                self.cur.execute(
+                    "SELECT drugadmin_id,job_number,password FROM drugadmin where job_number = {}".format(username))
+                data_s = self.cur.fetchall()
+            if data_s == []:
+                self.cur.execute(
+                    "SELECT supplier_id,job_number,password FROM supplier where job_number = {}".format(username))
+                data_s = self.cur.fetchall()
             result = []
             for key in data_s[0].keys():
                 result.append(str(key))
@@ -172,6 +183,7 @@ class DoctorRole(RoleBase):
             return "更新成功"
 
         except Exception as e:
+            print(e)
             return "更新失败"
 
     def update_schedule_state(self, new_status, doctor_id, schedule_id):
@@ -298,7 +310,46 @@ class NurseRole(RoleBase):
                 self.conn.commit()
             return "更新成功"
         except Exception as e:
+            print(e)
             return "更新失败"
+
+    def insert_drugout(self, drug_name, number, nurse_id):
+        try:
+            self.cur.execute("SELECT drug_id, number FROM drug WHERE name = '{}' and number != 0".format(drug_name))
+            data_s = self.cur.fetchall()
+            result = []
+            for data in data_s:
+                for value in data.values():
+                    result.append(value)
+            sum = 0
+            for i in range(1, len(result), 2):
+                sum = sum + result[i]
+            if sum < number:
+                return '库存不足'
+            else:
+                for i in range(0, len(result), 2):
+                    if number != 0:
+                        if result[i + 1] >= number:
+                            self.cur.execute(
+                                "UPDATE drug SET number = {} WHERE drug_id = {} ".format(result[i + 1] - number,
+                                                                                         result[i]))
+                            self.cur.execute(
+                                "INSERT INTO drugout (time, number, nurse_id, drug_id) VALUES ('{}',{},{},{})".format(
+                                    datetime.now(), number, nurse_id, result[i]))
+                            self.conn.commit()
+                        else:
+                            self.cur.execute(
+                                "UPDATE drug SET number = {} WHERE drug_id = {} ".format(0, result[i]))
+                            self.cur.execute(
+                                "INSERT INTO drugout (time, number, nurse_id, drug_id) VALUES ('{}',{},{},{})".format(
+                                    datetime.now(), result[i + 1], nurse_id, result[i]))
+                            number = number - result[i + 1]
+                            self.conn.commit()
+                    else:
+                        return '出库成功'
+        except Exception as e:
+            print(e)
+            return '出库失败'
 
 
 class PatientRole(RoleBase):
@@ -373,8 +424,10 @@ class PatientRole(RoleBase):
                               cls=ComplexEncoder)
         except Exception as e:
             if "permission denied" in str(e):
+                print(e)
                 return "权限不足"
             else:
+                print(e)
                 return "查询失败"
 
     def query_case(self, patient_id):
@@ -391,17 +444,17 @@ class PatientRole(RoleBase):
                               cls=ComplexEncoder)
         except Exception as e:
             if "permission denied" in str(e):
+                print(e)
                 return "权限不足"
             else:
+                print(e)
                 return "查询失败"
 
     def query_prescription(self, patient_id):
         try:
-            sql = "SELECT * FROM prescription WHERE patient_id = {}".format(patient_id)
-            result = []
-            self.cur.execute(sql)
-            self.conn.commit()  # 提交当前事务：
+            self.cur.execute("SELECT * FROM prescription WHERE patient_id = {}".format(patient_id))
             data_s = self.cur.fetchall()
+            result = []
             for data in data_s:
                 data_dict = dict(data)
                 result.append(data_dict)
@@ -409,8 +462,10 @@ class PatientRole(RoleBase):
                               cls=ComplexEncoder)
         except Exception as e:
             if "permission denied" in str(e):
+                print(e)
                 return "权限不足"
             else:
+                print(e)
                 return "查询失败"
 
 
