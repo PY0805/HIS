@@ -81,7 +81,7 @@ def login():
         password = request.form['password']
         # 查询数据库数据
         user, id, role = adminRole.login(username, password)
-        if user != False and id != False and role != False:
+        if user is not False and id is not False and role is not False:
             # 如果验证通过，将用户信息存储在session中
             session['user_info'] = user
             session[f'{role}_id'] = id
@@ -119,10 +119,8 @@ def edit_doctor_profile():
             new_passwd = request.form.get('passwd')
             new_photo = request.form.get('photo')
             new_introduction = request.form.get('introduction')
-            print(doctorRole.insert_prescription(doctor_id, 1, {"hhh": 11, "999感冒灵": 1}, 'this is notes'))
-            return render_template('doctor/profile.html', id=doctor_id)
-            # doctorRole.update_information(new_passwd, new_introduction, new_photo, doctor_id)
-            # return redirect(url_for('login'))
+            doctorRole.update_information(new_passwd, new_introduction, new_photo, doctor_id)
+            return redirect(url_for('login'))
         else:
             return render_template('doctor/profile.html', id=doctor_id)
     else:
@@ -196,6 +194,7 @@ def doctor_diagnosis():
         return redirect(url_for('login'))
 
 
+# 开处方
 @app.route('/prescriptions', methods=['GET', 'POST'])
 def prescriptions():
     user_info = session.get('user_info')
@@ -204,23 +203,12 @@ def prescriptions():
         if request.method == 'POST':
             # 处理处方开具表单提交
             patient_id = request.form.get('patient_id')
-            prescription_id = request.form.get('prescription_id')
             content = request.form.get('content')
-            name = request.form.get('name')
-            nurse_id = request.form.get('nurse_id')
-            prescription_date = datetime.now()
             notes = request.form.get('notes')
-            state = request.form.get('state')
-            # 在实际应用中，将处方信息插入数据库
-            conn = create_conn()
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO prescription (doctor_id, patient_id, content,prescription_id,name,nurse_id,date,notes,state) VALUES ({}, {}, '{}',{},'{}',{},'{}','{}',{})".format(
-                    doctor_id, patient_id, content, prescription_id, name, nurse_id, prescription_date, notes, state))
-            conn.commit()
-            conn.close()
-
-        return render_template('doctor/prescriptions.html', user_info=user_info)
+            flag = doctorRole.insert_prescription(doctor_id, patient_id, content, notes)
+            return render_template('doctor/prescriptions.html', user_info=user_info, success=flag)
+        else:
+            return render_template('doctor/prescriptions.html', user_info=user_info, error='')
     else:
         return redirect(url_for('login'))
 
@@ -298,20 +286,14 @@ def patient_case():
         return redirect(url_for('login'))
 
 
+# 患者查看处方
 @app.route('/patient_prescription')
 def patient_prescription():
     user_info = session.get('user_info')
     patient_id = session.get('patient_id')
     if user_info:
-        conn = create_conn()
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM prescription WHERE patient_id = {}'.format(patient_id))
-        patient_prescription = cursor.fetchall()
-        columns = get_table_columns('prescription')
-        conn.close()
-        return render_template('patient/patient_prescription.html', columns=columns,
-                               patient_prescription=patient_prescription,
-                               patient_id=patient_id)
+        prescription = patientRole.query_prescription(patient_id)
+        return render_template('patient/patient_prescription.html', prescription=prescription)
     else:
         return redirect(url_for('login'))
 
@@ -351,9 +333,9 @@ def handle_prescription():
         if request.method == 'POST':
             prescription_id = request.form.get('prescription_id')
             flag = nurseRole.handle_prescription(prescription_id, nurse_id)
-            return render_template('nurse/handle_prescription.html', nurse_id=nurse_id, flag=flag)
+            return render_template('nurse/handle_prescription.html', nurse_id=nurse_id, success=flag)
         else:
-            return render_template('nurse/handle_prescription.html', nurse_id=nurse_id, flag=flag)
+            return render_template('nurse/handle_prescription.html', nurse_id=nurse_id, error='')
     else:
         return redirect(url_for('login'))
 

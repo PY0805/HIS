@@ -210,13 +210,12 @@ class DoctorRole(RoleBase):
                     return "药品库存不足"
                 drugs.append((drug_name, drug_count))
             self.cur.execute(
-                "INSERT INTO prescription (date, doctor_id, patient_id, notes, content, state, name) VALUES ('{}',{}, {}, '{}', "
-                "'{}',1, (SELECT name FROM patient where patient.patient_id = {} )) RETURNING prescription_id".format(
-                    datetime.now(), doctor_id, patient_id, notes,
-                    str(json.dumps(content))), 1)
+                "INSERT INTO prescription (date, doctor_id, patient_id, notes, content, state, name) VALUES ('{}', "
+                "{}, {}, '{}', '{}', {}, (SELECT name FROM patient where patient.patient_id = {})) RETURNING "
+                "prescription_id".format(
+                    datetime.now(), doctor_id, patient_id, notes, str(json.dumps(content)), 1, patient_id))
             self.conn.commit()
-            prescription_id = self.cur.fetchone()
-            print('666')
+            prescription_id = str(self.cur.fetchone()).split(' ')[1].split(')')[0]
             for drug in drugs:
                 print(prescription_id, drug[0], drug[1])
                 self.cur.execute(
@@ -502,21 +501,24 @@ class PatientRole(RoleBase):
 
     def query_prescription(self, patient_id):
         try:
-            self.cur.execute("SELECT * FROM prescription WHERE patient_id = {}".format(patient_id))
+            print(patient_id)
+            self.cur.execute(
+                "SELECT prescription_id, content, date, state, notes FROM prescription WHERE patient_id = {} ".format(
+                    patient_id))
             data_s = self.cur.fetchall()
+            print(data_s)
             result = []
             for data in data_s:
                 data_dict = dict(data)
                 result.append(data_dict)
-            return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
+            print(result)
+            print(json.dumps(result, ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
+                             cls=ComplexEncoder))
+            return json.dumps(result, ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
                               cls=ComplexEncoder)
         except Exception as e:
-            if "permission denied" in str(e):
-                print(e)
-                return "权限不足"
-            else:
-                print(e)
-                return "查询失败"
+            print(e)
+            return "查询失败"
 
 
 class SupplierRole(RoleBase):
