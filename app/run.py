@@ -1,13 +1,11 @@
-import json
-import random
 import uuid
 
+import matplotlib
 from flask import Flask, render_template, request, redirect, url_for, session
 
 from Roles import *
 from libs.DB import create_conn, get_table_columns
 from settings import db_log, hospital_info
-import matplotlib
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -442,6 +440,10 @@ def drugout_analysis():
             plot_url = base64.encodebytes(img.getvalue()).decode()
             plt.close()
             return render_template('drugadmin/analysis.html', plot_url=plot_url)
+        else:
+            return render_template('drugadmin/analysis.html')
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/rank', methods=['GET', 'POST'])
@@ -474,6 +476,10 @@ def view_rank():
             plot_url = base64.encodebytes(img.getvalue()).decode()
             plt.close()
             return render_template('drugadmin/rank.html', plot_url=plot_url)
+        else:
+            return render_template('drugadmin/rank.html')
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/supplier_dashboard')
