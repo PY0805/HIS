@@ -235,6 +235,9 @@ class DoctorRole(RoleBase):
             self.cur.execute("INSERT INTO caserecord (record_time,case_id,doctor_id,content,state) VALUES ('{}',{},"
                              "{},'{}',1)".format(datetime.now(), case_id, doctor_id, content))
             self.conn.commit()
+            self.cur.execute(
+                "UPDATE case SET last_update_person = (SELECT doctor.name FROM doctor WHERE doctor_id = {}), last_update_time = () WHERE case_id = {}".format(
+                    case_id))
             return "插入成功"
         except Exception as e:
             print(e)
@@ -292,23 +295,15 @@ class DrugadminRole(RoleBase):
                 instruction)
             self.cur.execute(sql1)
             self.conn.commit()
-            drug_id = self.cur.fetchone()[0]
-            sql2 = "INSERT INTO drugin (in_number, time, admin_id, drug_id) VALUES ({}, '{}', {}, {})".format(
-                in_number,
-                self.cur.execute("SELECT time FROM drug WHERE drug_id = {}".format(drug_id)),
-                admin_id,
-                in_number,
-                drug_id)
+            drug_id = int(str(self.cur.fetchall()).split(',')[1].split(')')[0].replace(' ', ''))
+            sql2 = ("INSERT INTO drugin (in_number, time, admin_id, drug_id) VALUES ({}, (SELECT time FROM drug WHERE "
+                    "drug_id = {}) , {}, {})").format(in_number, drug_id, admin_id, drug_id)
             self.cur.execute(sql2)
             self.conn.commit()
-            return "插入成功"
+            return "入库成功"
         except Exception as e:
-            if "permission denied" in str(e):
-                return "权限不足"
-            elif "already exists." in str(e):
-                return "插入序号已经存在"
-            else:
-                return "插入失败"
+            print(e)
+            return "入库失败"
 
 
 class NurseRole(RoleBase):

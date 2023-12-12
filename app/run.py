@@ -404,8 +404,8 @@ def insert_drugin():
             notes = request.form.get('notes')
             instruction = request.form.get('instruction')
             n = request.form.get('n')
-            drugadminRole.insert_drugin(in_number, drug_name, batch, n, notes, instruction, supplier_id, drugadmin_id)
-        return render_template('drugadmin/insert_drugin.html', user_info=user_info)
+            flag = drugadminRole.insert_drugin(in_number, drug_name, batch, n, notes, instruction, supplier_id, drugadmin_id)
+        return render_template('drugadmin/insert_drugin.html', success=flag)
     else:
         return redirect(url_for('login'))
 
