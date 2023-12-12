@@ -7,6 +7,14 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from Roles import *
 from libs.DB import create_conn, get_table_columns
 from settings import db_log, hospital_info
+import matplotlib
+
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
+
+plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签SimHei
+from io import BytesIO
 
 app = Flask(__name__)
 adminRole = AdminRole(db_log['admin'])  # 创建管理员
@@ -408,6 +416,64 @@ def insert_drugin():
         return render_template('drugadmin/insert_drugin.html', user_info=user_info)
     else:
         return redirect(url_for('login'))
+
+
+@app.route('/analysis', methods=['GET', 'POST'])
+def drugout_analysis():
+    user_info = session.get('user_info')
+    drugadmin_id = session.get('drugadmin_id')
+    if user_info:
+        if request.method == 'POST':
+            start_date = request.form.get('start_date')
+            end_date = request.form.get('end_date')
+            drug_name = request.form.get('drug_name')
+            x, y = drugadminRole.query_drugout(start_date, end_date, drug_name)
+            plt.figure(figsize=(8, 6))
+            plt.plot(x, y)
+            plt.xlabel('日期')
+            plt.ylabel('出库量')
+            ax = plt.gca()
+            formatter = DateFormatter('%Y-%m-%d')
+            ax.xaxis.set_major_formatter(formatter)
+            img = BytesIO()
+            plt.title("{}在{}到{}时间段的出库统计".format(drug_name, start_date, end_date))
+            plt.savefig(img, format='png')
+            img.seek(0)
+            plot_url = base64.encodebytes(img.getvalue()).decode()
+            plt.close()
+            return render_template('drugadmin/analysis.html', plot_url=plot_url)
+
+
+@app.route('/rank', methods=['GET', 'POST'])
+def view_rank():
+    user_info = session.get('user_info')
+    drugadmin_id = session.get('drugadmin_id')
+    if user_info:
+        if request.method == 'POST':
+            start_date = request.form.get('start_date')
+            end_date = request.form.get('end_date')
+            result = drugadminRole.view_rank(start_date, end_date)
+            # print(result)
+            x = [data[0] for data in result]
+            y = [data[1] for data in result]
+            fig, ax = plt.subplots(figsize=(10, 7), facecolor='white', dpi=80)
+            plt.vlines(x=x, ymin=0, ymax=y, color='firebrick', alpha=0.7, linewidth=20)
+            plt.xlabel('药品名称')
+            plt.ylabel('出库量')
+            for i, num in enumerate(y):
+                ax.text(i, num + 0.5  # 注释所有的横纵坐标
+                        , round(num, 1)  # b保留一位小数
+                        , horizontalalignment='center'  # 相对于我们规定的x和y坐标，文字显示在什么地方
+                        )
+            ax.set_title('{}到{}药品出库排行'.format(start_date, end_date), fontdict={'size': 22})  # font字体
+            ax.set(ylabel='药品名称', ylim=(0, max(y) + 10))
+            ax.set_ylabel('出库量', fontdict={'size': 16})
+            img = BytesIO()
+            plt.savefig(img, format='png')
+            img.seek(0)
+            plot_url = base64.encodebytes(img.getvalue()).decode()
+            plt.close()
+            return render_template('drugadmin/rank.html', plot_url=plot_url)
 
 
 @app.route('/supplier_dashboard')

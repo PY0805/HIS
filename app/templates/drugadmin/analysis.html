@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drugadout Analysis</title>
+</head>
+  <h1>Drugadout Analysis</h1>
+  <!-- 查询表单 -->
+<form method="post" action="{{ url_for('drugout_analysis') }}" enctype="multipart/form-data">
+    <!-- 时间字段 -->
+    <label for="start_date">Start Date:</label>
+    <input type="text" name="start_date" value="{{ start_date }}">
+    <label for="end_date">End Date:</label>
+    <input type="text" name="end_date" value="{{ end_date }}">
+    <label for="drug_name">Drug Name:</label>
+    <input type="text" name="drug_name" value="{{ drug_name }}">
+    <!-- 用于更改的提交按钮 -->
+    <button type="submit">generate</button>
+</form>
+  <body>
+    <img src="data:image/png;base64,{{ plot_url }}" />
+  </body>
+</html>

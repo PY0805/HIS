@@ -8,6 +8,8 @@ from psycopg2 import extras
 from app.libs.CustomJSONEncoder import CustomJSONEncoder
 from libs.ComplexEncoder import ComplexEncoder
 
+import numpy as np
+from scipy.interpolate import make_interp_spline
 
 class RoleBase:
     def __init__(self, db_role):
@@ -309,6 +311,57 @@ class DrugadminRole(RoleBase):
                 return "插入序号已经存在"
             else:
                 return "插入失败"
+
+    def query_drugout(self, start_time, end_time, drug_name):
+        try:
+            sql = "SELECT drug.name,drugout.time,drugout.number,drugout.nurse_id FROM drugout,drug WHERE drugout.drug_id = drug.drug_id AND drug.name = '{}' AND drugout.time BETWEEN '{}' AND '{}'".format(
+                drug_name, start_time, end_time)
+            result = []
+            self.cur.execute(sql)
+            self.conn.commit()
+            data_s = self.cur.fetchall()
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+            result.sort(key=lambda x: x['time'])
+            time_list = []
+            num_list = []
+            for data in result:
+                time_list.append(data['time'])
+                num_list.append(data['number'])
+            return time_list,num_list
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
+
+    def view_rank(self, start_time, end_time):
+        try:
+            sql = "SELECT drug.name,drugout.number FROM drugout,drug WHERE drugout.drug_id = drug.drug_id AND drugout.time BETWEEN '{}' AND '{}'".format(
+                start_time, end_time)
+            result = []
+            self.cur.execute(sql)
+            self.conn.commit()
+            data_s = self.cur.fetchall()
+            name_list = []
+            rank_list = {}
+            for data in data_s:
+                data_dict = dict(data)
+                result.append(data_dict)
+                name_list.append(data['name'])
+            name_list = list(set(name_list))
+            for name in name_list:
+                rank_list[name] = 0
+                for data in result:
+                    if data['name'] == name:
+                        rank_list[name] += data['number']
+            return sorted(rank_list.items(), key=lambda x: x[1], reverse=True)
+        except Exception as e:
+            if "permission denied" in str(e):
+                return "权限不足"
+            else:
+                return "查询失败"
 
 
 class NurseRole(RoleBase):
