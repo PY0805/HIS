@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert CaseRecord</title>
+</head>
+<body>
+<h1>写病历</h1>
+<!-- 病历记录表单 -->
+<form method="post" action="{{ url_for('insert_caserecord') }}">
+    <label for="patient_id">患者ID：</label>
+    <input type="text" name="patient_id" required>
+    <label for="content">病历内容：</label>
+    <input type="text" name="content" required>
+    <button type="submit">Prescribe</button>
+</form>
+<h2>{{ success }}</h2>
+<p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

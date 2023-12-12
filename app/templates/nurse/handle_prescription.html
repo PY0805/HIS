@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Handle Prescription</title>
+    <!-- 在这里添加你的样式链接或内联样式 -->
+</head>
+<body>
+    <h1>Nurse Handle Prescription</h1>
+
+    {% if success %}
+        <h2>{{success}}</h2>
+    {% endif %}
+
+    {% if error %}
+        <div style="color: red;">{{ error }}</div>
+    {% endif %}
+
+    <!-- 护士处理处方的表单 -->
+    <form method="post" action="{{ url_for('handle_prescription') }}">
+        <h2>Nurse Prescription Handling</h2>
+
+        <!-- 处方ID字段 -->
+        <label for="prescription_id">Prescription ID:</label>
+        <input type="text" name="prescription_id" id="prescription_id" required>
+
+        <!-- 处方处理结果将在此显示 -->
+
+        <!-- 提交按钮 -->
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- 返回仪表板链接 -->
+    <p><a href="{{ url_for('nurse_dashboard') }}">Back to Dashboard</a></p>
+
+    <!-- 在这里添加其他页面元素或脚本 -->
+</body>
+</html>

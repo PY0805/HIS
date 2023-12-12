@@ -5,6 +5,7 @@ from datetime import datetime
 from psycopg2 import *
 from psycopg2 import extras
 
+from app.libs.CustomJSONEncoder import CustomJSONEncoder
 from libs.ComplexEncoder import ComplexEncoder
 
 
@@ -159,10 +160,8 @@ class DoctorRole(RoleBase):
             return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
                               cls=ComplexEncoder)
         except Exception as e:
-            if "permission denied" in str(e):
-                return "权限不足"
-            else:
-                return "查询失败"
+            print(e)
+            return "查询失败"
 
     def update_information(self, new_passwd, new_introduction, doctor_photo, doctor_id):
         try:
@@ -203,7 +202,7 @@ class DoctorRole(RoleBase):
         try:
             drugs = []
             self.conn.commit()
-            for drug_name, drug_count in content.items():
+            for drug_name, drug_count in json.loads(content).items():
                 self.cur.execute(
                     "SELECT EXISTS(SELECT drug_id FROM drug WHERE name = '{}' and number != 0)".format(drug_name))
                 isexist = str(self.cur.fetchone())
@@ -214,11 +213,12 @@ class DoctorRole(RoleBase):
                 "INSERT INTO prescription (date, doctor_id, patient_id, notes, content, state, name) VALUES ('{}', "
                 "{}, {}, '{}', '{}', {}, (SELECT name FROM patient where patient.patient_id = {})) RETURNING "
                 "prescription_id".format(
-                    datetime.now(), doctor_id, patient_id, notes, str(json.dumps(content)), 1, patient_id))
+                    datetime.now(), doctor_id, patient_id, notes,
+                    json.dumps(content, ensure_ascii=False).replace('\\', ''), 1,
+                    patient_id))
             self.conn.commit()
             prescription_id = str(self.cur.fetchone()).split(' ')[1].split(')')[0]
             for drug in drugs:
-                print(prescription_id, drug[0], drug[1])
                 self.cur.execute(
                     "INSERT INTO prescription_content (prescription_id, drugname, drugcount) VALUES ({}, '{}', {})".format(
                         prescription_id, drug[0], drug[1]))
@@ -227,6 +227,18 @@ class DoctorRole(RoleBase):
         except Exception as e:
             print(e)
             return "开处方失败"
+
+    def insert_caserecord(self, patient_id, doctor_id, content):
+        try:
+            self.cur.execute("SELECT case_id FROM \"case\" WHERE patient_id = {} ".format(patient_id))
+            case_id = int(str(self.cur.fetchall()).split(',')[1].split(')')[0].replace(' ', ''))
+            self.cur.execute("INSERT INTO caserecord (record_time,case_id,doctor_id,content,state) VALUES ('{}',{},"
+                             "{},'{}',1)".format(datetime.now(), case_id, doctor_id, content))
+            self.conn.commit()
+            return "插入成功"
+        except Exception as e:
+            print(e)
+            return "插入失败"
 
 
 class DrugadminRole(RoleBase):
@@ -497,41 +509,40 @@ class PatientRole(RoleBase):
 
     def query_case(self, patient_id):
         try:
-            sql = "SELECT * FROM case WHERE patient_id = {}".format(patient_id)
-            result = []
-            self.cur.execute(sql)
-            self.conn.commit()  # 提交当前事务：
+            self.cur.execute("SELECT case_id FROM \"case\" WHERE patient_id = {} ".format(patient_id))
+            case_id = int(str(self.cur.fetchall()).split(',')[1].split(')')[0].replace(' ', ''))
+            self.cur.execute("SELECT * FROM caserecord WHERE case_id = {} ".format(case_id))
             data_s = self.cur.fetchall()
+            result = []
             for data in data_s:
                 data_dict = dict(data)
                 result.append(data_dict)
-            return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
-                              cls=ComplexEncoder)
+            json_data = json.dumps(result, cls=CustomJSONEncoder, ensure_ascii=False).replace('\\', '').replace(
+                '\"\"', '').replace('\"state\": \"1\"', '\"state\": \"生效\"').replace('\"state\": \"2\"',
+                                                                                       '\"state\": \"失效\"').replace(
+                '\"state\": \"0\"',
+                '\"state\": \"未生效\"')
+            return json_data
         except Exception as e:
-            if "permission denied" in str(e):
-                print(e)
-                return "权限不足"
-            else:
-                print(e)
-                return "查询失败"
+            print(e)
+            return "查询失败"
 
     def query_prescription(self, patient_id):
         try:
-            print(patient_id)
             self.cur.execute(
                 "SELECT prescription_id, content, date, state, notes FROM prescription WHERE patient_id = {} ".format(
                     patient_id))
             data_s = self.cur.fetchall()
-            print(data_s)
             result = []
             for data in data_s:
                 data_dict = dict(data)
                 result.append(data_dict)
-            print(result)
-            print(json.dumps(result, ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
-                             cls=ComplexEncoder))
-            return json.dumps(result, ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
-                              cls=ComplexEncoder)
+            json_data = json.dumps(result, cls=CustomJSONEncoder, ensure_ascii=False).replace('\\', '').replace(
+                '\"\"', '').replace('\"state\": \"1\"', '\"state\": \"已开立\"').replace('\"state\": \"2\"',
+                                                                                         '\"state\": \"已处理\"').replace(
+                '\"state\": \"0\"',
+                '\"state\": \"未生效\"')
+            return json_data
         except Exception as e:
             print(e)
             return "查询失败"

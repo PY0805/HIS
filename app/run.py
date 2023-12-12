@@ -1,3 +1,4 @@
+import json
 import random
 import uuid
 
@@ -207,12 +208,32 @@ def prescriptions():
         if request.method == 'POST':
             # 处理处方开具表单提交
             patient_id = request.form.get('patient_id')
-            content = request.form.get('content')
+            drug_name = request.form.get('drug_name')
+            drug_number = request.form.get('drug_number')
             notes = request.form.get('notes')
-            flag = doctorRole.insert_prescription(doctor_id, patient_id, content, notes)
+            flag = doctorRole.insert_prescription(doctor_id, patient_id,
+                                                  json.dumps(dict(zip(drug_name.split('；'), drug_number.split('；'))),
+                                                             ensure_ascii=False), notes)
             return render_template('doctor/prescriptions.html', user_info=user_info, success=flag)
         else:
             return render_template('doctor/prescriptions.html', user_info=user_info, error='')
+    else:
+        return redirect(url_for('login'))
+
+
+# 写病历
+@app.route('/doctor/insert_caserecord', methods=['GET', 'POST'])
+def insert_caserecord():
+    user_info = session.get('user_info')
+    doctor_id = session.get('doctor_id')
+    if user_info:
+        if request.method == 'POST':
+            patient_id = request.form.get('patient_id')
+            content = request.form.get('content')
+            flag = doctorRole.insert_caserecord(patient_id, doctor_id, content)
+            return render_template('doctor/insert_caserecord.html', success=flag)
+        else:
+            return render_template('doctor/insert_caserecord.html', success='')
     else:
         return redirect(url_for('login'))
 
@@ -274,20 +295,14 @@ def patient_diagnosis():
         return redirect(url_for('login'))
 
 
+# 查病历
 @app.route('/patient_case')
 def patient_case():
     user_info = session.get('user_info')
     patient_id = session.get('patient_id')
     if user_info:
-        conn = create_conn()
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM case WHERE patient_id = {}'.format(patient_id))
-        patient_case = cursor.fetchall()
-        columns = get_table_columns('case')
-        conn.close()
-
-        return render_template('patient/patient_case.html', columns=columns, patient_case=patient_case,
-                               patient_id=patient_id)
+        case = patientRole.query_case(patient_id)
+        return render_template('patient/patient_case.html', patient_id=patient_id, case=case)
     else:
         return redirect(url_for('login'))
 
@@ -299,7 +314,7 @@ def patient_prescription():
     patient_id = session.get('patient_id')
     if user_info:
         prescription = patientRole.query_prescription(patient_id)
-        return render_template('patient/patient_prescription.html', prescription=prescription)
+        return render_template('patient/patient_prescription.html', patient_prescription=prescription)
     else:
         return redirect(url_for('login'))
 
