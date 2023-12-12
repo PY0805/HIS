@@ -1,22 +1,26 @@
 <!doctype html>
-<html>
-  <head>
+<html lang="zh">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drugadout Ranking</title>
+    <title>DrugOut Ranking</title>
 </head>
-  <h1>Drugadout Ranking</h1>
-  <!-- 查询表单 -->
+<h1>Drugadout Ranking</h1>
+<!-- 查询表单 -->
 <form method="post" action="{{ url_for('view_rank') }}" enctype="multipart/form-data">
     <!-- 时间字段 -->
     <label for="start_date">Start Date:</label>
-    <input type="text" name="start_date" value="{{ start_date }}">
+    <label>
+        <input type="text" name="start_date" value="{{ start_date }}">
+    </label>
     <label for="end_date">End Date:</label>
-    <input type="text" name="end_date" value="{{ end_date }}">
+    <label>
+        <input type="text" name="end_date" value="{{ end_date }}">
+    </label>
     <!-- 用于更改的提交按钮 -->
     <button type="submit">generate</button>
 </form>
-  <body>
-    <img src="data:image/png;base64,{{ plot_url }}" />
-  </body>
+<body>
+<img src="data:image/png;base64,{{ plot_url }}" alt="plot"/>
+</body>
 </html>

@@ -8,8 +8,6 @@ from psycopg2 import extras
 from app.libs.CustomJSONEncoder import CustomJSONEncoder
 from libs.ComplexEncoder import ComplexEncoder
 
-import numpy as np
-from scipy.interpolate import make_interp_spline
 
 class RoleBase:
     def __init__(self, db_role):
@@ -329,7 +327,7 @@ class DrugadminRole(RoleBase):
             for data in result:
                 time_list.append(data['time'])
                 num_list.append(data['number'])
-            return time_list,num_list
+            return time_list, num_list
         except Exception as e:
             if "permission denied" in str(e):
                 return "权限不足"
