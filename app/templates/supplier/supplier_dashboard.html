@@ -8,11 +8,11 @@
 <body>
 <div id="SupplierInfo">
     {% if data %}
-        <h2>ID 为 {{ supplier_id }}的供应商信息:</h2>
+        <h2>工号为{{ job_number }}的供应商信息:</h2>
         <ul>
             {% for key, value in data.items() %}
                 {% if key == 'photo' %}
-                    <li><strong>{{ key }}:</strong> <img src="data:image/jpeg;base64,{{ value }}" alt="Doctor Photo">
+                    <li><strong>{{ key }}:</strong> <img src="data:image/jpeg;base64,{{ value }}" alt="Supplier Photo">
                     </li>
                 {% else %}
                     <li><strong>{{ key }}:</strong> {{ value }}</li>

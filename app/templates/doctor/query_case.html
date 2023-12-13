@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Patient's Case</title>
+</head>
+<body>
+<form method="post" action="{{ url_for('query_case') }}">
+    <label for="patient_id">患者ID：</label>
+    <label>
+        <input type="text" name="patient_id" required>
+    </label>
+    <button type="submit">Prescribe</button>
+</form>
+{% if case %}
+    <h2>ID为{{ patient_id }}的患者病历信息查询结果:</h2>
+    <p>{{ case }}</p>
+{% else %}
+    <p>暂无病例信息</p>
+{% endif %}
+<p><a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

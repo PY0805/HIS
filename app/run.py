@@ -107,14 +107,8 @@ def login():
 def doctor_dashboard():
     user_info = session.get('user_info')
     if user_info and user_info[0] == '1':
-        conn = create_conn()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM doctor WHERE job_number = {} ".format(user_info))
-        doctor_info = cursor.fetchone()
-        doctor_columns = [column[0] for column in cursor.description]
-        conn.close()
-        return render_template('doctor/dashboard.html', user_info=user_info, doctor_info=doctor_info,
-                               doctor_columns=doctor_columns)
+        data = eval(doctorRole.query_information(user_info))
+        return render_template('doctor/dashboard.html', job_number=user_info, data=data)
     else:
         return redirect(url_for('login'))
 
@@ -244,19 +238,27 @@ def insert_caserecord():
         return redirect(url_for('login'))
 
 
+# 查病历
+@app.route('/query_case', methods=['GET', 'POST'])
+def query_case():
+    user_info = session.get('user_info')
+    if user_info:
+        if request.method == 'POST':
+            patient_id = request.form.get('patient_id')
+            case = doctorRole.query_case(patient_id)
+            return render_template('doctor/query_case.html', patient_id=patient_id, case=case)
+        else:
+            return render_template('doctor/query_case.html')
+    else:
+        return redirect(url_for('login'))
+
+
 @app.route('/patient_dashboard')
 def patient_dashboard():
     user_info = session.get('user_info')
-    patient_id = session.get('patient_id')
     if user_info:
-        conn = create_conn()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM patient WHERE patient_id = {} ".format(patient_id))
-        patient_info = cursor.fetchone()
-        patient_columns = [column[0] for column in cursor.description]
-        conn.close()
-        return render_template('patient/patient_dashboard.html', user_info=user_info, patient_info=patient_info,
-                               patient_columns=patient_columns)
+        data = eval(patientRole.query_information(user_info))
+        return render_template('patient/patient_dashboard.html', phone_number=user_info, data=data)
     else:
         return redirect(url_for('login'))
 
@@ -328,10 +330,9 @@ def patient_prescription():
 @app.route('/nurse_dashboard')
 def nurse_dashboard():
     user_info = session.get('user_info')
-    nurse_id = session.get('nurse_id')
     if user_info:
         data = eval(nurseRole.query_information(user_info))
-        return render_template('nurse/nurse_dashboard.html', nurse_id=nurse_id, data=data)
+        return render_template('nurse/nurse_dashboard.html', job_number=user_info, data=data)
     else:
         return redirect(url_for('login'))
 
@@ -372,10 +373,9 @@ def handle_prescription():
 @app.route('/drugadmin_dashboard')
 def drugadmin_dashboard():
     user_info = session.get('user_info')
-    drugadmin_id = session.get('drugadmin_id')
     if user_info:
-        data = eval(drugadminRole.query_information(drugadmin_id))
-        return render_template('drugadmin/drugadmin_dashboard.html', drugadmin_id=drugadmin_id, data=data)
+        data = eval(drugadminRole.query_information(user_info))
+        return render_template('drugadmin/drugadmin_dashboard.html', job_number=user_info, data=data)
     else:
         return redirect(url_for('login'))
 

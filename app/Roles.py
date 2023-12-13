@@ -87,7 +87,7 @@ class AdminRole(RoleBase):
                 data_s = self.cur.fetchall()
             if data_s == []:
                 self.cur.execute(
-                    "SELECT supplier_id,phone_number,password FROM supplier where phone_number = {}".format(username))
+                    "SELECT supplier_id,job_number,password FROM supplier where job_number = {}".format(username))
                 data_s = self.cur.fetchall()
             result = []
             for key in data_s[0].keys():
@@ -113,21 +113,19 @@ class DoctorRole(RoleBase):
             sql = ("SELECT doctor_id, name, sex, age, phone_number, state, work_date, introduction, id_number, "
                    "job_number, title, photo, department_id FROM doctor WHERE job_number = {} ").format(
                 job_number)
-            result = []
             self.cur.execute(sql)
-            self.conn.commit()  # 提交当前事务：case
             data_s = self.cur.fetchall()
             print(data_s)
+            result = []
             for data in data_s:
                 data_dict = dict(data)
+                data_dict['photo'] = base64.b64encode(bytes(memoryview(data_dict['photo']))).decode('utf-8')
                 result.append(data_dict)
             print(result)
             return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
         except Exception as e:
-            if "permission denied" in str(e):
-                return "权限不足"
-            else:
-                return "查询失败"
+            print(e)
+            return "查询失败"
 
     def query_schedule(self, doctor_id):
         try:
@@ -142,10 +140,8 @@ class DoctorRole(RoleBase):
             return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'),
                               cls=ComplexEncoder)
         except Exception as e:
-            if "permission denied" in str(e):
-                return "权限不足"
-            else:
-                return "查询失败"
+            print(e)
+            return "查询失败"
 
     def query_diagnosis(self, doctor_id):
         try:
@@ -240,20 +236,39 @@ class DoctorRole(RoleBase):
             print(e)
             return "插入失败"
 
-
-class DrugadminRole(RoleBase):
-    def query_information(self, drugadmin_id):
+    def query_case(self, patient_id):
         try:
-            sql = "SELECT drugadmin_id, name, sex, age, phone_number, work_date, id_number, job_number, state, photo FROM drugadmin WHERE drugadmin_id = {} ".format(
-                drugadmin_id)
-            result = []
-            self.cur.execute(sql)
-            self.conn.commit()
+            self.cur.execute("SELECT case_id FROM \"case\" WHERE patient_id = {} ".format(patient_id))
+            case_id = int(str(self.cur.fetchall()).split(',')[1].split(')')[0].replace(' ', ''))
+            self.cur.execute("SELECT * FROM caserecord WHERE case_id = {} ".format(case_id))
             data_s = self.cur.fetchall()
+            result = []
             for data in data_s:
                 data_dict = dict(data)
                 result.append(data_dict)
+            json_data = json.dumps(result, cls=CustomJSONEncoder, ensure_ascii=False).replace('\\', '').replace(
+                '\"\"', '').replace('\"state\": \"1\"', '\"state\": \"生效\"').replace('\"state\": \"2\"',
+                                                                                       '\"state\": \"失效\"').replace(
+                '\"state\": \"0\"',
+                '\"state\": \"未生效\"')
+            return json_data
+        except Exception as e:
+            print(e)
+            return "查询失败"
+
+
+class DrugadminRole(RoleBase):
+    def query_information(self, job_number):
+        try:
+            self.cur.execute(
+                "SELECT drugadmin_id, name, sex, age, phone_number, work_date, id_number, job_number, state, photo FROM drugadmin WHERE job_number = {} ".format(
+                    job_number))
+            data_s = self.cur.fetchall()
+            result = []
+            for data in data_s:
+                data_dict = dict(data)
                 data_dict['photo'] = base64.b64encode(bytes(memoryview(data_dict['photo']))).decode('utf-8')
+                result.append(data_dict)
             return json.dumps(result[0], ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ':'))
         except:
             return "查询失败"
@@ -263,7 +278,7 @@ class DrugadminRole(RoleBase):
             if new_phone_number != '':
                 self.cur.execute(
                     "UPDATE drugadmin SET phone_number = {} WHERE drugadmin_id = {} ".format(new_phone_number,
-                                                                                            drugadmin_id))
+                                                                                             drugadmin_id))
                 self.conn.commit()
 
             if new_photo != '':
@@ -365,11 +380,9 @@ class DrugadminRole(RoleBase):
 class NurseRole(RoleBase):
     def query_information(self, job_number):
         try:
-            sql = "SELECT * FROM nurse WHERE job_number = {} ".format(job_number)
-            result = []
-            self.cur.execute(sql)
-            self.conn.commit()  # 提交当前事务：case
+            self.cur.execute("SELECT * FROM nurse WHERE job_number = {} ".format(job_number))
             data_s = self.cur.fetchall()
+            result = []
             for data in data_s:
                 data_dict = dict(data)
                 data_dict['photo'] = base64.b64encode(bytes(memoryview(data_dict['photo']))).decode('utf-8')

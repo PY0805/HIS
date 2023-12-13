@@ -6,25 +6,23 @@
     <title>Doctor Dashboard</title>
 </head>
 <body>
-<h1>Welcome, Dr. {{ doctor_info[1] }}</h1>
-
-{% if doctor_info %}
-    <h2>Your Information:</h2>
-    <table border="1">
-        <tr>
-            {% for column in doctor_columns %}
-                <th>{{ column }}</th>
+<div id="DoctorInfo">
+    {% if data %}
+        <h2>工号为{{ job_number }}的医生信息:</h2>
+        <ul>
+            {% for key, value in data.items() %}
+                {% if key == 'photo' %}
+                    <li><strong>{{ key }}:</strong> <img src="data:image/jpeg;base64,{{ value }}" alt="Doctor Photo">
+                    </li>
+                {% else %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endif %}
             {% endfor %}
-        </tr>
-        <tr>
-            {% for value in doctor_info %}
-                <td>{{ value }}</td>
-            {% endfor %}
-        </tr>
-    </table>
-{% else %}
-    <p>No information available.</p>
-{% endif %}
+        </ul>
+    {% else %}
+        <p>No information available.</p>
+    {% endif %}
+</div>
 
 <p><a href="{{ url_for('home') }}">Back to Home</a></p>
 <ul>
@@ -34,6 +32,7 @@
     <li><a href="{{ url_for('doctor_diagnosis') }}">View Diagnosis</a></li>
     <li><a href="{{ url_for('prescriptions') }}">Prescriptions</a></li>
     <li><a href="{{ url_for('insert_caserecord') }}">Insert Case Record</a></li>
+    <li><a href="{{ url_for('query_case') }}">View Patient's Case</a></li>
 </ul>
 </body>
 </html>

@@ -8,7 +8,7 @@
 <body>
 <div id="NurseInfo">
     {% if data %}
-        <h2>ID 为 {{ nurse_id }}的药房护士信息:</h2>
+        <h2>工号为{{ job_number }}的药房护士信息:</h2>
         <ul>
             {% for key, value in data.items() %}
                 {% if key == 'photo' %}
