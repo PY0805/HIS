@@ -167,12 +167,12 @@ class DoctorRole(RoleBase):
         try:
             if new_passwd != '':
                 self.cur.execute(
-                    "UPDATE doctor SET password = {} WHERE doctor_id = {}".format(new_passwd, doctor_id))
+                    "UPDATE doctor SET password = '{}' WHERE doctor_id = {}".format(new_passwd, doctor_id))
                 self.conn.commit()
 
             if new_introduction != '':
                 self.cur.execute(
-                    "UPDATE doctor SET introduction = {} WHERE doctor_id = {}".format(new_introduction, doctor_id))
+                    "UPDATE doctor SET introduction = '{}' WHERE doctor_id = {}".format(new_introduction, doctor_id))
                 self.conn.commit()
 
             if doctor_photo != '':
@@ -211,7 +211,7 @@ class DoctorRole(RoleBase):
                 drugs.append((drug_name, drug_count))
             self.cur.execute(
                 "INSERT INTO prescription (date, doctor_id, patient_id, notes, content, state, name) VALUES ('{}', "
-                "{}, {}, '{}', '{}', {}, (SELECT name FROM patient where patient.patient_id = {})) RETURNING "
+                "{}, {}, '{}', '{}', '{}', (SELECT name FROM patient where patient.patient_id = {})) RETURNING "
                 "prescription_id".format(
                     datetime.now(), doctor_id, patient_id, notes,
                     json.dumps(content, ensure_ascii=False).replace('\\', ''), 1,
@@ -262,7 +262,7 @@ class DrugadminRole(RoleBase):
         try:
             if new_phone_number != '':
                 self.cur.execute(
-                    "UPDATE drugadmin SET phone_number = {} WHERE drugadmin_id = {}".format(new_phone_number,
+                    "UPDATE drugadmin SET phone_number = {} WHERE drugadmin_id = {} ".format(new_phone_number,
                                                                                             drugadmin_id))
                 self.conn.commit()
 
@@ -509,12 +509,12 @@ class PatientRole(RoleBase):
 
             if new_past != '':
                 self.cur.execute(
-                    "UPDATE patient SET past_history = {} WHERE patient_id = {} ".format(new_past, patient_id))
+                    "UPDATE patient SET past_history = '{}' WHERE patient_id = {} ".format(new_past, patient_id))
                 self.conn.commit()
 
             if new_allergy != '':
                 self.cur.execute(
-                    "UPDATE patient SET allergy = {} WHERE patient_id = {} ".format(new_allergy, patient_id))
+                    "UPDATE patient SET allergy = '{}' WHERE patient_id = {} ".format(new_allergy, patient_id))
                 self.conn.commit()
 
             if new_marry != '':
@@ -524,7 +524,7 @@ class PatientRole(RoleBase):
 
             if new_address != '':
                 self.cur.execute(
-                    "UPDATE patient SET address = {} WHERE patient_id = {} ;".format(new_address, patient_id))
+                    "UPDATE patient SET address = '{}' WHERE patient_id = {} ;".format(new_address, patient_id))
                 self.conn.commit()
 
             if new_photo != '':
@@ -668,7 +668,7 @@ class UnauthorizedRole(RoleBase):
     def query_hospital(self, id_num):
         try:
             super(UnauthorizedRole, )
-            sql = "SELECT * FROM hospital WHERE hospital_id={}".format(id_num)
+            sql = "SELECT * FROM hospital WHERE hospital_id = {} ".format(id_num)
             result = []
             self.cur.execute(sql)
             self.conn.commit()  # 提交当前事务：
@@ -683,7 +683,7 @@ class UnauthorizedRole(RoleBase):
 
     def query_department(self, department_id):
         try:
-            sql = "SELECT department_id,department_name,hospital_id FROM department WHERE department_id={}".format(
+            sql = "SELECT department_id,department_name,hospital_id FROM department WHERE department_id = {} ".format(
                 department_id)
             result = []
             self.cur.execute(sql)
@@ -701,7 +701,7 @@ class UnauthorizedRole(RoleBase):
 
     def query_doctor(self, doctor_id):
         try:
-            sql = "SELECT name,photo,department_id,title FROM doctor WHERE doctor_id={}".format(doctor_id)
+            sql = "SELECT name,photo,department_id,title FROM doctor WHERE doctor_id = {} ".format(doctor_id)
             result = []
             self.cur.execute(sql)
             self.conn.commit()  # 提交当前事务：case
